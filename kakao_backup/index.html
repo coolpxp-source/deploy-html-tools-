@@ -73,11 +73,14 @@
   .date-div { text-align: center; margin: 10px 0; font-size: 11px; color: #444; background: rgba(255,255,255,.5); display: inline-block; padding: 3px 14px; border-radius: 20px; align-self: center; }
   .bubble-row { display: flex; align-items: flex-start; gap: 6px; margin: 2px 0; }
   .bubble-row.me { flex-direction: row-reverse; }
-  .avatar { width: 36px; height: 36px; border-radius: 12px; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; align-self: flex-start; }
+  .avatar { width: 36px; height: 36px; border-radius: 12px; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; align-self: flex-start; overflow: hidden; padding: 0; }
+  .avatar.hidden { visibility: hidden; }
   .bubble-wrap { display: flex; flex-direction: column; gap: 2px; max-width: 200px; width: auto; }
   .bubble-row.me .bubble-wrap { align-items: flex-end; }
   .sender-name { font-size: 11px; color: #333; padding-left: 2px; }
   .bubble { padding: 8px 12px; font-size: 14px; line-height: 1.5; word-break: break-all; white-space: pre-wrap; display: inline-block; width: fit-content; }
+  .bubble.me { border-radius: 18px 4px 18px 18px; }
+  .bubble.ot { border-radius: 4px 18px 18px 18px; }
 
   .output-area { padding: 12px 14px; border-top: 1px solid #eee; display: flex; flex-direction: column; gap: 6px; }
   .output-area button { width: 100%; padding: 10px; background: #FEE500; border: 1px solid #e6cf00; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; }
@@ -442,12 +445,11 @@
       if (!isMe) prevName = m.name; else prevName = '';
       const bg = isMe ? colors.me : colors.ot;
       const tc = isMe ? meText : otText;
-      const br = isMe ? '18px 4px 18px 18px' : '4px 18px 18px 18px';
       html += `<div class="bubble-row ${isMe ? 'me' : ''}">
-        ${!isMe ? `<div class="avatar" style="background:${av(m.name)};overflow:hidden;padding:0">${m.avatar ? `<img src="${m.avatar}" style="width:100%;height:100%;object-fit:cover" />` : m.name[0]}</div>` : ''}
+        ${!isMe ? `<div class="avatar${!showName ? ' hidden' : ''}" style="background:${av(m.name)}">${m.avatar ? `<img src="${m.avatar}" style="width:100%;height:100%;object-fit:cover" />` : m.name[0]}</div>` : ''}
         <div class="bubble-wrap">
           ${showName ? `<span class="sender-name">${m.name}</span>` : ''}
-          <div class="bubble" style="background:${bg};color:${tc};border-radius:${br}">${m.content.replace(/\n/g, '<br>')}</div>
+          <div class="bubble ${isMe ? 'me' : 'ot'}" style="background:${bg};color:${tc}">${m.content.replace(/\n/g, '<br>')}</div>
           ${m.img ? `<img src="${m.img}" style="width:100%;max-width:200px;height:160px;object-fit:cover;border-radius:12px;margin-top:4px;display:block" />` : ''}
         </div>
       </div>`;
