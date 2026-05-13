@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>트위터 멘션 스레드 백업 생성기</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; background: #f0f0f0; display: flex; justify-content: center; padding: 30px 16px; min-height: 100vh; }
+
+  .wrap { display: grid; grid-template-columns: 320px 1fr; gap: 0; border: 1px solid #ddd; border-radius: 12px; overflow: hidden; background: #fff; width: 100%; max-width: 900px; }
+
+  /* ── 왼쪽 패널 ── */
+  .panel { padding: 14px; border-right: 1px solid #eee; display: flex; flex-direction: column; gap: 10px; max-height: 750px; overflow-y: auto; }
+  .panel h2 { font-size: 14px; font-weight: 600; color: #333; padding-bottom: 8px; border-bottom: 1px solid #eee; }
+
+  .seg { display: flex; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
+  .seg button { flex: 1; padding: 7px 0; font-size: 13px; background: transparent; border: none; cursor: pointer; color: #888; font-family: inherit; transition: all .15s; }
+  .seg button.active { background: #e8f5fe; color: #1d9bf0; font-weight: 600; }
+
+  .shortcut-hint { font-size: 11px; color: #aaa; text-align: center; margin-top: 3px; }
+  .shortcut-hint kbd { background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; padding: 1px 5px; font-size: 11px; color: #666; }
+
+  label { font-size: 12px; color: #666; display: block; margin-bottom: 3px; }
+  input[type=text], input[type=date], textarea, select {
+    width: 100%; font-size: 13px; padding: 7px 10px;
+    border: 1px solid #ddd; border-radius: 8px;
+    background: #fff; color: #333; font-family: inherit; resize: none;
+  }
+  textarea { height: 68px; line-height: 1.5; }
+  .row2 { display: flex; gap: 6px; }
+  .row2 > div { flex: 1; }
+
+  .btn { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; font-size: 13px; background: transparent; color: #333; font-family: inherit; }
+  .btn.primary { background: #1d9bf0; border-color: #1a8cd8; color: #fff; font-weight: 600; }
+  .btn.save { background: #4CAF50; border-color: #3d8b40; color: #fff; font-weight: 600; }
+  .btn.ghost { color: #888; }
+  .btn.danger { color: #c33; }
+  .btn.generate { background: #1d9bf0; border-color: #1a8cd8; color: #fff; font-weight: 600; }
+
+  .edit-banner { background: #e8f5fe; border: 1px solid #1d9bf0; border-radius: 8px; padding: 6px 10px; font-size: 12px; color: #0d6ea0; display: none; }
+
+  .msglist { display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; padding: 6px; }
+  .msgitem { display: flex; align-items: center; gap: 4px; font-size: 12px; padding: 4px 6px; border-radius: 6px; background: #f8f8f8; color: #666; }
+  .msgitem.editing { background: #e8f5fe; outline: 1px solid #1d9bf0; }
+  .msgitem.is-origin { background: #fff8e1; }
+  .msgitem .lbl { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .msgitem .ico { cursor: pointer; border: none; background: none; padding: 0 3px; font-size: 13px; line-height: 1; color: #999; }
+  .msgitem .ico.del { color: #c00; }
+  .empty { font-size: 12px; color: #bbb; text-align: center; padding: 14px; }
+
+  /* ── 오른쪽 미리보기 ── */
+  .preview-col { display: flex; flex-direction: column; background: #fff; }
+
+  .preview-header { background: #1d9bf0; padding: 10px 16px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .preview-header span { color: #fff; font-size: 15px; font-weight: 600; }
+
+  /* 테마 토글 */
+  .theme-toggle { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+  .theme-toggle label { font-size: 11px; color: rgba(255,255,255,.8); margin: 0; cursor: pointer; }
+  .theme-toggle input { cursor: pointer; }
+
+  .preview { flex: 1; overflow-y: auto; max-height: 700px; transition: background .2s; padding: 12px 0; }
+  .preview.dark { background: #000; }
+  .preview.light { background: #fff; }
+
+  /* ── 트윗 카드 ── */
+
+
+  .tweet { display: flex; gap: 0; padding: 10px 16px; position: relative; }
+  .tweet.reply { padding-left: 60px; }
+  .tweet-left { position: relative; display: flex; flex-direction: column; align-items: center; margin-right: 10px; flex-shrink: 0; }
+  .avatar { width: 40px; height: 40px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; flex-shrink: 0; }
+  .avatar.large { width: 48px; height: 48px; font-size: 20px; }
+  .thread-line { position: absolute; width: 2px; background: #cfd9de; top: 44px; bottom: -10px; left: 50%; transform: translateX(-50%); }
+  .preview.dark .thread-line { background: #555; }
+
+  .tweet-right { flex: 1; min-width: 0; }
+  .tweet-meta { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-bottom: 2px; }
+  .tweet-name { font-size: 15px; font-weight: 700; color: #0f1419; }
+  .tweet-handle { font-size: 14px; color: #536471; }
+  .tweet-date { font-size: 13px; color: #536471; }
+  .tweet-date::before { content: '·'; margin-right: 4px; }
+  .preview.dark .tweet-name { color: #e7e9ea; }
+  .preview.dark .tweet-handle, .preview.dark .tweet-date { color: #71767b; }
+
+  .tweet-content { font-size: 15px; line-height: 1.5; color: #0f1419; margin-bottom: 8px; word-break: break-word; white-space: pre-wrap; }
+  .preview.dark .tweet-content { color: #e7e9ea; }
+
+  .tweet-stats { display: flex; gap: 16px; }
+  .stat { display: flex; align-items: center; gap: 4px; font-size: 13px; color: #536471; }
+  .stat span { font-size: 16px; }
+  .preview.dark .stat { color: #71767b; }
+
+  /* 원본 트윗 구분선 */
+  .origin-divider { height: 1px; background: #eff3f4; margin: 4px 0; }
+  .preview.dark .origin-divider { background: #2f3336; }
+
+  /* 출력 영역 */
+  .output-area { padding: 12px 14px; border-top: 1px solid #eee; }
+  .output-area button { width: 100%; padding: 10px; background: #1d9bf0; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; color: #fff; }
+  .copy-msg { font-size: 12px; color: green; display: none; text-align: center; margin-top: 6px; }
+
+  /* 구분선 */
+  .section-div { height: 1px; background: #eee; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 왼쪽 패널 -->
+  <div class="panel">
+    <h2>트윗 입력</h2>
+    <div class="edit-banner" id="edit-banner">✏️ 수정 중 — 저장하면 변경돼요</div>
+
+    <div>
+      <label>유형</label>
+      <div class="seg">
+        <button class="active" id="btn-origin" onclick="setMode('origin')">🔖 원본 트윗</button>
+        <button id="btn-reply" onclick="setMode('reply')">💬 멘션/답글</button>
+      </div>
+      <p class="shortcut-hint"><kbd>Tab</kbd> 전환 &nbsp;·&nbsp; <kbd>Enter</kbd> 추가</p>
+    </div>
+
+    <div class="row2">
+      <div>
+        <label>이름</label>
+        <input type="text" id="t-name" placeholder="홍길동" />
+      </div>
+      <div>
+        <label>@핸들</label>
+        <input type="text" id="t-handle" placeholder="honggildong" oninput="updateAutoColor()" />
+      </div>
+      <div style="flex:0 0 auto">
+        <label>프로필색</label>
+        <input type="color" id="t-color" value="#1d9bf0" style="width:36px;height:36px;padding:2px;border:1px solid #ddd;border-radius:8px;cursor:pointer;background:transparent;display:block" />
+      </div>
+      <div style="flex:0 0 auto">
+        <label>프로필사진</label>
+        <div style="position:relative;width:36px;height:36px">
+          <div id="t-avatar-preview" style="width:36px;height:36px;border-radius:50%;background:#1d9bf0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;overflow:hidden;border:1px solid #ddd;cursor:pointer" onclick="document.getElementById('t-avatar-img').click()">📷</div>
+          <input type="file" id="t-avatar-img" accept="image/*" style="display:none" onchange="handleAvatarImage(this)" />
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <label>내용</label>
+      <textarea id="t-content" placeholder="트윗 내용 입력"></textarea>
+    </div>
+
+    <div class="row2">
+      <div>
+        <label>날짜 (선택)</label>
+        <input type="date" id="t-date" />
+      </div>
+      <div>
+        <label>좋아요 수 (선택)</label>
+        <input type="text" id="t-likes" placeholder="1,234" />
+      </div>
+    </div>
+
+    <div>
+      <label>리트윗 수 (선택)</label>
+      <input type="text" id="t-rt" placeholder="567" />
+    </div>
+
+    <div>
+      <label>이미지 첨부 (선택)</label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <label for="t-img" style="cursor:pointer;padding:7px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;color:#555;background:#f9f9f9;margin:0;white-space:nowrap">📷 파일 선택</label>
+        <input type="file" id="t-img" accept="image/*" style="display:none" onchange="handleImage(this)" />
+        <span id="img-name" style="font-size:12px;color:#aaa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">선택된 파일 없음</span>
+        <button onclick="clearImage()" id="img-clear" style="display:none;border:none;background:none;color:#c00;cursor:pointer;font-size:13px;padding:0 4px">✕</button>
+      </div>
+      <img id="img-preview" src="" alt="" style="display:none;margin-top:6px;max-width:100%;max-height:120px;border-radius:8px;object-fit:cover;border:1px solid #eee" />
+    </div>
+
+    <button class="btn primary" id="submit-btn" onclick="submitTweet()">+ 추가</button>
+    <button class="btn ghost" id="cancel-btn" style="display:none" onclick="cancelEdit()">취소</button>
+
+    <div class="section-div"></div>
+
+    <div>
+      <label>입력된 트윗 (<span id="tweet-count">0</span>개)</label>
+      <div class="msglist" id="msglist"><p class="empty">아직 트윗이 없어요</p></div>
+    </div>
+
+    <button class="btn danger" onclick="clearAll()">전체 초기화</button>
+  </div>
+
+  <!-- 오른쪽 미리보기 -->
+  <div class="preview-col">
+    <div class="preview-header">
+      <span>🐦 스레드 미리보기</span>
+      <div class="theme-toggle">
+        <label for="dark-toggle">다크모드</label>
+        <input type="checkbox" id="dark-toggle" onchange="toggleTheme()" />
+      </div>
+    </div>
+    <div class="preview light" id="preview">
+      <p class="empty" style="color:#aaa;text-align:center;padding:40px">트윗을 추가하면 여기에 표시됩니다</p>
+    </div>
+    <div class="output-area">
+      <button onclick="generateHTML()">HTML 코드 생성 & 복사</button>
+      <p class="copy-msg" id="copy-msg">✅ 복사됐어요! 티스토리 HTML 편집기에 붙여넣기 하세요.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let tweets = [], currentMode = 'origin', editingId = null, isDark = false;
+  let originSet = false;
+
+  const ac = ['#1d9bf0','#FF6B6B','#4ECDC4','#F7A35C','#DDA0DD','#43b97f','#F7DC6F','#7CB9E8'];
+  const av = n => { let h = 0; for (let c of (n||'?')) h = (h * 31 + c.charCodeAt(0)) % ac.length; return ac[h]; };
+
+  function toggleTheme() {
+    isDark = document.getElementById('dark-toggle').checked;
+    const p = document.getElementById('preview');
+    p.classList.toggle('dark', isDark);
+    p.classList.toggle('light', !isDark);
+    renderPreview();
+  }
+
+  function setMode(m, flash = false) {
+    currentMode = m;
+    document.getElementById('btn-origin').classList.toggle('active', m === 'origin');
+    document.getElementById('btn-reply').classList.toggle('active', m === 'reply');
+    if (flash) {
+      const s = document.querySelector('.seg');
+      s.style.opacity = '.4'; setTimeout(() => s.style.opacity = '1', 150);
+    }
+  }
+
+  const contentEl = document.getElementById('t-content');
+  contentEl.addEventListener('keydown', e => {
+    if (e.key === 'Tab') { e.preventDefault(); setMode(currentMode === 'origin' ? 'reply' : 'origin', true); }
+    else if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitTweet(); }
+  });
+
+  let currentImgBase64 = null;
+  let currentAvatarBase64 = null;
+
+  function handleAvatarImage(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      currentAvatarBase64 = e.target.result;
+      const preview = document.getElementById('t-avatar-preview');
+      preview.innerHTML = `<img src="${currentAvatarBase64}" style="width:100%;height:100%;object-fit:cover" />`;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function handleImage(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      currentImgBase64 = e.target.result;
+      document.getElementById('img-preview').src = currentImgBase64;
+      document.getElementById('img-preview').style.display = 'block';
+      document.getElementById('img-name').textContent = file.name;
+      document.getElementById('img-clear').style.display = 'inline';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function clearImage() {
+    currentImgBase64 = null;
+    document.getElementById('t-img').value = '';
+    document.getElementById('img-preview').style.display = 'none';
+    document.getElementById('img-preview').src = '';
+    document.getElementById('img-name').textContent = '선택된 파일 없음';
+    document.getElementById('img-clear').style.display = 'none';
+  }
+
+  function getFormData() {
+    return {
+      mode: currentMode,
+      name: document.getElementById('t-name').value.trim() || '익명',
+      handle: document.getElementById('t-handle').value.trim().replace(/^@/, '') || 'anonymous',
+      content: document.getElementById('t-content').value.trim(),
+      date: document.getElementById('t-date').value,
+      likes: document.getElementById('t-likes').value.trim(),
+      rt: document.getElementById('t-rt').value.trim(),
+      color: document.getElementById('t-color').value,
+      avatar: currentAvatarBase64,
+      img: currentImgBase64,
+    };
+  }
+
+  function clearForm() {
+    document.getElementById('t-content').value = '';
+    document.getElementById('t-date').value = '';
+    document.getElementById('t-likes').value = '';
+    document.getElementById('t-rt').value = '';
+    clearImage();
+  }
+
+  function updateAutoColor() {
+    const handle = document.getElementById('t-handle').value.trim();
+    if (handle) document.getElementById('t-color').value = av(handle);
+  }
+
+  function submitTweet() {
+    const d = getFormData();
+    if (!d.content) return;
+    if (editingId !== null) {
+      const idx = tweets.findIndex(t => t.id === editingId);
+      if (idx > -1) tweets[idx] = { ...tweets[idx], ...d };
+      cancelEdit();
+    } else {
+      tweets.push({ ...d, id: Date.now() });
+      clearForm();
+    }
+    renderList(); renderPreview();
+    contentEl.focus();
+  }
+
+  function editTweet(id) {
+    const t = tweets.find(x => x.id === id);
+    if (!t) return;
+    editingId = id;
+    setMode(t.mode);
+    document.getElementById('t-name').value = t.name;
+    document.getElementById('t-handle').value = t.handle;
+    document.getElementById('t-content').value = t.content;
+    document.getElementById('t-color').value = t.color || av(t.handle);
+    currentAvatarBase64 = t.avatar || null;
+    const ap = document.getElementById('t-avatar-preview');
+    ap.innerHTML = t.avatar ? `<img src="${t.avatar}" style="width:100%;height:100%;object-fit:cover" />` : '📷';
+    document.getElementById('t-date').value = t.date || '';
+    if (t.img) {
+      currentImgBase64 = t.img;
+      document.getElementById('img-preview').src = t.img;
+      document.getElementById('img-preview').style.display = 'block';
+      document.getElementById('img-name').textContent = '이미지 있음';
+      document.getElementById('img-clear').style.display = 'inline';
+    } else { clearImage(); }
+    document.getElementById('t-likes').value = t.likes || '';
+    document.getElementById('t-rt').value = t.rt || '';
+    document.getElementById('submit-btn').textContent = '💾 저장';
+    document.getElementById('submit-btn').className = 'btn save';
+    document.getElementById('cancel-btn').style.display = 'block';
+    document.getElementById('edit-banner').style.display = 'block';
+    contentEl.focus(); renderList();
+  }
+
+  function cancelEdit() {
+    editingId = null; clearForm();
+    document.getElementById('submit-btn').textContent = '+ 추가';
+    document.getElementById('submit-btn').className = 'btn primary';
+    document.getElementById('cancel-btn').style.display = 'none';
+    document.getElementById('edit-banner').style.display = 'none';
+    renderList();
+  }
+
+  function moveItem(id, dir) {
+    const idx = tweets.findIndex(t => t.id === id);
+    const to = idx + dir;
+    if (to < 0 || to >= tweets.length) return;
+    [tweets[idx], tweets[to]] = [tweets[to], tweets[idx]];
+    renderList(); renderPreview();
+  }
+
+  function delItem(id) {
+    if (editingId === id) cancelEdit();
+    tweets = tweets.filter(t => t.id !== id);
+    renderList(); renderPreview();
+  }
+
+  function clearAll() {
+    tweets = []; cancelEdit();
+    document.getElementById('t-name').value = '';
+    document.getElementById('t-handle').value = '';
+    document.getElementById('t-color').value = '#1d9bf0';
+    currentAvatarBase64 = null;
+    document.getElementById('t-avatar-img').value = '';
+    document.getElementById('t-avatar-preview').innerHTML = '📷';
+    clearForm();
+    renderList(); renderPreview();
+  }
+
+  function fmtDate(val) {
+    if (!val) return '';
+    const d = new Date(val);
+    return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}.`;
+  }
+
+  function renderList() {
+    const el = document.getElementById('msglist');
+    document.getElementById('tweet-count').textContent = tweets.length;
+    if (!tweets.length) { el.innerHTML = '<p class="empty">아직 트윗이 없어요</p>'; return; }
+    el.innerHTML = tweets.map((t, i) => `
+      <div class="msgitem${editingId === t.id ? ' editing' : ''}${t.mode === 'origin' ? ' is-origin' : ''}">
+        <button class="ico" onclick="moveItem(${t.id},-1)" ${i === 0 ? 'style="opacity:.3;pointer-events:none"' : ''}>↑</button>
+        <button class="ico" onclick="moveItem(${t.id},1)" ${i === tweets.length - 1 ? 'style="opacity:.3;pointer-events:none"' : ''}>↓</button>
+        <span class="lbl">${t.mode === 'origin' ? '🔖' : '💬'} <b>@${t.handle}</b>: ${t.content}</span>
+        <button class="ico" onclick="editTweet(${t.id})">✏️</button>
+        <button class="ico del" onclick="delItem(${t.id})">✕</button>
+      </div>`).join('');
+  }
+
+  function renderPreview() {
+    const area = document.getElementById('preview');
+    if (!tweets.length) {
+      area.innerHTML = '<p class="empty" style="color:#aaa;text-align:center;padding:40px">트윗을 추가하면 여기에 표시됩니다</p>';
+      return;
+    }
+    const dark = isDark;
+    let html = '';
+    tweets.forEach((t, i) => {
+      const isLast = i === tweets.length - 1;
+      const isOrigin = t.mode === 'origin';
+      const color = t.color || av(t.handle);
+      const initial = (t.name || '?')[0].toUpperCase();
+      const dateStr = fmtDate(t.date);
+
+      html += `
+        <div class="tweet${isOrigin ? '' : ' reply'}">
+          <div class="tweet-left">
+            <div class="avatar${isOrigin ? ' large' : ''}" style="background:${color};overflow:hidden;padding:0">${t.avatar ? `<img src="${t.avatar}" style="width:100%;height:100%;object-fit:cover" />` : initial}</div>
+            ${!isOrigin && !isLast ? `<div class="thread-line"></div>` : ''}
+          </div>
+          <div class="tweet-right">
+            <div class="tweet-meta">
+              <span class="tweet-name">${t.name}</span>
+              <span class="tweet-handle">@${t.handle}</span>
+              ${dateStr ? `<span class="tweet-date">${dateStr}</span>` : ''}
+            </div>
+            <div class="tweet-content">${t.content.replace(/\n/g, '<br>')}</div>
+            ${t.img ? `<img src="${t.img}" style="width:100%;height:200px;object-fit:cover;border-radius:12px;margin-bottom:8px;display:block" />` : ''}
+            ${(t.likes || t.rt) ? `
+            <div class="tweet-stats">
+              ${t.rt ? `<span class="stat"><span>🔁</span>${t.rt}</span>` : ''}
+              ${t.likes ? `<span class="stat"><span>❤️</span>${t.likes}</span>` : ''}
+            </div>` : ''}
+          </div>
+        </div>
+        ${isOrigin && tweets.length > 1 ? '<div class="origin-divider"></div>' : ''}
+      `;
+    });
+    area.innerHTML = html;
+  }
+
+  function generateHTML() {
+    const dark = isDark;
+    const bg = dark ? '#000' : '#fff';
+    const namec = dark ? '#e7e9ea' : '#0f1419';
+    const handlec = dark ? '#71767b' : '#536471';
+    const contentc = dark ? '#e7e9ea' : '#0f1419';
+    const linec = dark ? '#333' : '#cfd9de';
+    const divc = dark ? '#2f3336' : '#eff3f4';
+
+    const css = `.tw{font-family:-apple-system,'Helvetica Neue',sans-serif;background:${bg};border:1px solid ${divc};border-radius:16px;overflow:hidden;max-width:560px;margin:0 auto;padding:8px 0}.tw-item{display:flex;gap:0;padding:10px 16px;position:relative}.tw-item.reply{padding-left:60px}.tw-left{position:relative;display:flex;flex-direction:column;align-items:center;margin-right:10px;flex-shrink:0}.tw-av{width:40px;height:40px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0}.tw-av.lg{width:48px;height:48px;font-size:20px}.tw-line{position:absolute;width:2px;background:${linec};top:44px;bottom:-10px;left:50%;transform:translateX(-50%)}.tw-r{flex:1;min-width:0}.tw-meta{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:2px}.tw-name{font-size:15px;font-weight:700;color:${namec}}.tw-handle{font-size:14px;color:${handlec}}.tw-date{font-size:13px;color:${handlec}}.tw-date::before{content:'·';margin-right:4px}.tw-body{font-size:15px;line-height:1.5;color:${contentc};margin-bottom:8px;word-break:break-word;white-space:pre-wrap}.tw-stats{display:flex;gap:16px}.tw-stat{display:flex;align-items:center;gap:4px;font-size:13px;color:${handlec}}.tw-div{height:1px;background:${divc};margin:4px 0}`;
+
+    let body = '';
+    tweets.forEach((t, i) => {
+      const isLast = i === tweets.length - 1;
+      const isOrigin = t.mode === 'origin';
+      const color = t.color || av(t.handle);
+      const initial = (t.name || '?')[0].toUpperCase();
+      const dateStr = fmtDate(t.date);
+      body += `<div class="tw-item${isOrigin ? '' : ' reply'}">
+  <div class="tw-left">
+    <div class="tw-av${isOrigin ? ' lg' : ''}" style="background:${color};overflow:hidden;padding:0">${t.avatar ? `<img src="${t.avatar}" style="width:100%;height:100%;object-fit:cover" />` : initial}</div>
+    ${!isOrigin && !isLast ? `<div class="tw-line"></div>` : ''}
+  </div>
+  <div class="tw-r">
+    <div class="tw-meta">
+      <span class="tw-name">${t.name}</span>
+      <span class="tw-handle">@${t.handle}</span>
+      ${dateStr ? `<span class="tw-date">${dateStr}</span>` : ''}
+    </div>
+    <div class="tw-body">${t.content.replace(/\n/g, '<br>')}</div>
+    ${t.img ? `<img src="${t.img}" style="width:100%;height:200px;object-fit:cover;border-radius:12px;margin-bottom:8px;display:block" />` : ''}
+    ${(t.likes || t.rt) ? `<div class="tw-stats">${t.rt ? `<span class="tw-stat">🔁 ${t.rt}</span>` : ''}${t.likes ? `<span class="tw-stat">❤️ ${t.likes}</span>` : ''}</div>` : ''}
+  </div>
+</div>\n${isOrigin && tweets.length > 1 ? '<div class="tw-div"></div>\n' : ''}`;
+    });
+
+    const full = `<!-- 트위터 스레드 백업 -->\n<style>${css}</style>\n<div class="tw">\n${body}</div>`;
+    navigator.clipboard.writeText(full).then(() => {
+      const msg = document.getElementById('copy-msg');
+      msg.style.display = 'block';
+      setTimeout(() => msg.style.display = 'none', 4000);
+    });
+  }
+
+  contentEl.focus();
+</script>
+</body>
+</html>
