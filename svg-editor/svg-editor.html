@@ -1,415 +1,474 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SVG 타이핑 에디터</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Pretendard:wght@400;500;600&display=swap" rel="stylesheet"/>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg: #0d1117;
-      --surface: #161b22;
-      --surface2: #21262d;
-      --border: #30363d;
-      --text: #e6edf3;
-      --text-muted: #8b949e;
-      --green: #3fb950;
-      --blue: #58a6ff;
-      --purple: #bc8cff;
-      --accent: #238636;
-      --accent-hover: #2ea043;
-      --red: #f85149;
-      --radius: 10px;
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
-      min-height: 100vh;
-      padding: 40px 20px;
-    }
-
-    .page {
-      max-width: 860px;
-      margin: 0 auto;
-    }
-
-    header {
-      margin-bottom: 36px;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(63,185,80,0.12);
-      border: 1px solid rgba(63,185,80,0.3);
-      color: var(--green);
-      font-size: 12px;
-      font-family: 'JetBrains Mono', monospace;
-      padding: 4px 10px;
-      border-radius: 20px;
-      margin-bottom: 16px;
-    }
-
-    .badge::before { content: '●'; font-size: 8px; }
-
-    h1 {
-      font-size: 28px;
-      font-weight: 600;
-      letter-spacing: -0.5px;
-      margin-bottom: 8px;
-      background: linear-gradient(135deg, var(--text) 40%, var(--text-muted));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .subtitle {
-      color: var(--text-muted);
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    /* ── 미리보기 ── */
-    .section-label {
-      font-size: 11px;
-      font-family: 'JetBrains Mono', monospace;
-      color: var(--text-muted);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-
-    .preview-wrap {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 28px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 120px;
-      margin-bottom: 24px;
-      position: relative;
-    }
-
-    .preview-wrap svg { max-width: 100%; height: auto; }
-
-    /* ── 툴바 ── */
-    .toolbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
-
-    button {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-family: 'Pretendard', sans-serif;
-      font-size: 13px;
-      font-weight: 500;
-      padding: 7px 14px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: var(--surface2);
-      color: var(--text);
-      cursor: pointer;
-      transition: background 0.15s, border-color 0.15s;
-    }
-
-    button:hover { background: #2d333b; border-color: #8b949e; }
-
-    button.primary {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-    }
-    button.primary:hover { background: var(--accent-hover); }
-
-    button.danger {
-      background: transparent;
-      border-color: var(--border);
-      color: var(--text-muted);
-    }
-    button.danger:hover { border-color: var(--red); color: var(--red); }
-
-    /* ── 에디터 ── */
-    .editor-box {
-      position: relative;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-      margin-bottom: 10px;
-    }
-
-    .editor-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 16px;
-      background: var(--surface2);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .dot { width: 12px; height: 12px; border-radius: 50%; }
-    .dot.r { background: #ff5f57; }
-    .dot.y { background: #febc2e; }
-    .dot.g { background: #28c840; }
-
-    .editor-filename {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-left: 4px;
-    }
-
-    textarea {
-      display: block;
-      width: 100%;
-      min-height: 320px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12.5px;
-      line-height: 1.7;
-      background: transparent;
-      color: var(--text);
-      border: none;
-      outline: none;
-      padding: 16px;
-      resize: vertical;
-      tab-size: 2;
-    }
-
-    /* ── 에러 & 상태 ── */
-    .status-bar {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      min-height: 22px;
-      color: var(--text-muted);
-    }
-    .status-bar.error { color: var(--red); }
-    .status-bar.ok { color: var(--green); }
-
-    /* ── 팁 카드 ── */
-    .tips {
-      margin-top: 32px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px 24px;
-    }
-
-    .tips h2 {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--blue);
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .tips ul {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .tips li {
-      font-size: 13px;
-      color: var(--text-muted);
-      padding-left: 16px;
-      position: relative;
-      line-height: 1.6;
-    }
-
-    .tips li::before {
-      content: '›';
-      position: absolute;
-      left: 0;
-      color: var(--green);
-      font-weight: bold;
-    }
-
-    code {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11.5px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      padding: 1px 6px;
-      border-radius: 4px;
-      color: var(--purple);
-    }
-
-    footer {
-      margin-top: 40px;
-      text-align: center;
-      font-size: 12px;
-      color: var(--text-muted);
-      opacity: 0.6;
-    }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SVG 타이핑 에디터</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Pretendard:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&family=Nanum+Gothic&family=Nanum+Pen+Script&family=Jua&family=Black+Han+Sans&family=Gaegu&family=Sunflower:wght@500&family=Dokdo&family=Poor+Story&family=Gowun+Dodum&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--surface:#161b22;--surface2:#21262d;--border:#30363d;
+  --text:#e6edf3;--muted:#8b949e;--green:#3fb950;--blue:#58a6ff;
+  --purple:#bc8cff;--accent:#238636;--accent-h:#2ea043;--red:#f85149;--r:10px;
+}
+body{background:var(--bg);color:var(--text);font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;min-height:100vh;padding:40px 20px}
+.page{max-width:900px;margin:0 auto}
+header{margin-bottom:28px}
+.badge{display:inline-flex;align-items:center;gap:6px;background:rgba(63,185,80,.12);border:1px solid rgba(63,185,80,.3);color:var(--green);font-size:12px;font-family:'JetBrains Mono',monospace;padding:4px 10px;border-radius:20px;margin-bottom:12px}
+.badge::before{content:'●';font-size:8px}
+h1{font-size:26px;font-weight:600;letter-spacing:-.5px;margin-bottom:6px;background:linear-gradient(135deg,var(--text) 40%,var(--muted));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.subtitle{color:var(--muted);font-size:14px;line-height:1.6}
+.slabel{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.preview{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:28px 20px;display:flex;align-items:center;justify-content:center;min-height:120px;margin-bottom:16px;overflow:hidden}
+.preview svg{max-width:100%;height:auto}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;margin-bottom:12px}
+.panel-title{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:12px}
+.orow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.obtn{font-family:'Pretendard',sans-serif;font-size:13px;padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all .15s}
+.obtn:hover{border-color:var(--blue);color:var(--text)}
+.obtn.on{background:rgba(88,166,255,.15);border-color:var(--blue);color:var(--blue);font-weight:600}
+.div{width:100%;height:1px;background:var(--border);margin:10px 0}
+.crow{display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.ci{display:flex;align-items:center;gap:8px;cursor:pointer}
+.ci label{font-size:13px;color:var(--muted);cursor:pointer}
+.ci input[type=color]{width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:none;cursor:pointer;padding:2px}
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px}
+.bgroup{display:flex;gap:8px;flex-wrap:wrap}
+button{display:inline-flex;align-items:center;gap:6px;font-family:'Pretendard',sans-serif;font-size:13px;font-weight:500;padding:7px 14px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;transition:background .15s,border-color .15s}
+button:hover{background:#2d333b;border-color:#8b949e}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.primary:hover{background:var(--accent-h)}
+button.danger{background:transparent;color:var(--muted)}
+button.danger:hover{border-color:var(--red);color:var(--red)}
+.ebox{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:8px}
+.ehdr{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.dot{width:11px;height:11px;border-radius:50%}
+.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+.efn{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);margin-left:4px}
+textarea{display:block;width:100%;min-height:340px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;background:transparent;color:var(--text);border:none;outline:none;padding:16px;resize:vertical;tab-size:2}
+.status{font-family:'JetBrains Mono',monospace;font-size:12px;min-height:20px;color:var(--muted);margin-bottom:20px}
+.status.ok{color:var(--green)}.status.err{color:var(--red)}
+.tips{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 22px}
+.tips h2{font-size:13px;font-weight:600;color:var(--blue);margin-bottom:10px}
+.tips ul{list-style:none;display:flex;flex-direction:column;gap:7px}
+.tips li{font-size:13px;color:var(--muted);padding-left:14px;position:relative;line-height:1.6}
+.tips li::before{content:'›';position:absolute;left:0;color:var(--green);font-weight:bold}
+code{font-family:'JetBrains Mono',monospace;font-size:11.5px;background:var(--surface2);border:1px solid var(--border);padding:1px 6px;border-radius:4px;color:var(--purple)}
+.fnote{font-size:11px;color:var(--muted);width:100%;margin-top:6px;opacity:.7}
+footer{margin-top:32px;text-align:center;font-size:12px;color:var(--muted);opacity:.5}
+</style>
 </head>
 <body>
 <div class="page">
-
   <header>
     <div class="badge">SVG Live Editor</div>
     <h1>GitHub 프로필 타이핑 에디터</h1>
-    <p class="subtitle">코드를 수정하면 바로 미리보기 됩니다. 완성되면 SVG로 다운로드하세요.</p>
+    <p class="subtitle">옵션을 선택하면 미리보기에 바로 반영됩니다.</p>
   </header>
 
-  <div class="section-label">미리보기</div>
-  <div class="preview-wrap" id="preview">
-    <span style="color: var(--text-muted); font-size: 13px;">코드를 입력하면 여기에 표시됩니다</span>
+  <div class="slabel">미리보기</div>
+  <div class="preview" id="preview"><span style="color:var(--muted);font-size:13px">로딩 중...</span></div>
+
+  <!-- 폰트 -->
+  <div class="panel">
+    <div class="panel-title">🔤 폰트</div>
+    <div class="orow" id="fg">
+      <span class="fnote" style="margin:0">시스템 폰트</span>
+      <button class="obtn on" data-font="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif" data-imp="" onclick="setFont(this)">기본 고딕</button>
+      <button class="obtn" style="font-family:'Courier New',monospace" data-font="'Courier New',Courier,monospace" data-imp="" onclick="setFont(this)">Courier New</button>
+      <button class="obtn" data-font="Arial,'Apple SD Gothic Neo','Noto Sans KR',sans-serif" data-imp="" onclick="setFont(this)">Arial</button>
+      <button class="obtn" style="font-family:'Georgia',serif" data-font="'Georgia','Apple SD Gothic Neo',serif" data-imp="" onclick="setFont(this)">Georgia</button>
+      <div class="div"></div>
+      <span class="fnote" style="margin:0">구글 폰트 (브라우저·티스토리)</span>
+      <button class="obtn" style="font-family:'Noto Sans KR'" data-font="'Noto Sans KR',sans-serif" data-imp="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" onclick="setFont(this)">Noto Sans KR</button>
+      <button class="obtn" style="font-family:'Nanum Gothic'" data-font="'Nanum Gothic',sans-serif" data-imp="https://fonts.googleapis.com/css2?family=Nanum+Gothic&display=swap" onclick="setFont(this)">나눔고딕</button>
+      <button class="obtn" style="font-family:'Gowun Dodum'" data-font="'Gowun Dodum',sans-serif" data-imp="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" onclick="setFont(this)">고운돋움</button>
+      <button class="obtn" style="font-family:'Jua'" data-font="'Jua',sans-serif" data-imp="https://fonts.googleapis.com/css2?family=Jua&display=swap" onclick="setFont(this)">주아체 🐾</button>
+      <button class="obtn" style="font-family:'Black Han Sans'" data-font="'Black Han Sans',sans-serif" data-imp="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" onclick="setFont(this)">검은고딕 🖤</button>
+      <button class="obtn" style="font-family:'Nanum Pen Script'" data-font="'Nanum Pen Script',cursive" data-imp="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" onclick="setFont(this)">나눔펜 ✍️</button>
+      <button class="obtn" style="font-family:'Gaegu'" data-font="'Gaegu',cursive" data-imp="https://fonts.googleapis.com/css2?family=Gaegu&display=swap" onclick="setFont(this)">가을체 🍂</button>
+      <button class="obtn" style="font-family:'Poor Story'" data-font="'Poor Story',cursive" data-imp="https://fonts.googleapis.com/css2?family=Poor+Story&display=swap" onclick="setFont(this)">푸어스토리 📖</button>
+      <button class="obtn" style="font-family:'Sunflower'" data-font="'Sunflower',sans-serif" data-imp="https://fonts.googleapis.com/css2?family=Sunflower:wght@500&display=swap" onclick="setFont(this)">해바라기 🌻</button>
+      <button class="obtn" style="font-family:'Dokdo'" data-font="'Dokdo',cursive" data-imp="https://fonts.googleapis.com/css2?family=Dokdo&display=swap" onclick="setFont(this)">독도체 🌊</button>
+      <p class="fnote">💡 구글 폰트는 GitHub README img 방식에서 적용 안 될 수 있어요</p>
+    </div>
   </div>
 
+  <!-- 애니메이션 -->
+  <div class="panel">
+    <div class="panel-title">✨ 애니메이션</div>
+    <div class="slabel" style="margin-bottom:8px">효과</div>
+    <div class="orow" id="efg" style="margin-bottom:14px">
+      <button class="obtn on" onclick="setEffect(this,'discrete')">⌨️ 타닥타닥</button>
+      <button class="obtn" onclick="setEffect(this,'linear')">▶ 슬라이드</button>
+      <button class="obtn" onclick="setEffect(this,'fade')">🌟 페이드인</button>
+      <button class="obtn" onclick="setEffect(this,'drop')">⬇️ 위에서 떨어짐</button>
+      <button class="obtn" onclick="setEffect(this,'bounce')">🎾 전체 바운스</button>
+      <button class="obtn" onclick="setEffect(this,'charbounce')">🎯 글자별 바운스</button>
+    </div>
+    <div class="div"></div>
+    <div class="slabel" style="margin:10px 0 8px">속도</div>
+    <div class="orow" id="spg">
+      <button class="obtn" onclick="setSpeed(this,'5s')">⚡ 빠르게</button>
+      <button class="obtn on" onclick="setSpeed(this,'8s')">● 보통</button>
+      <button class="obtn" onclick="setSpeed(this,'13s')">🐢 느리게</button>
+    </div>
+  </div>
+
+  <!-- 배경 효과 -->
+  <div class="panel">
+    <div class="panel-title">🌈 배경 효과</div>
+    <div class="orow" id="bgg">
+      <button class="obtn on" onclick="setBg(this,'none')">없음</button>
+      <button class="obtn" onclick="setBg(this,'sparkle')">✦ 반짝반짝</button>
+      <button class="obtn" onclick="setBg(this,'star')">⭐ 별</button>
+      <button class="obtn" onclick="setBg(this,'heart')">💕 하트</button>
+      <button class="obtn" onclick="setBg(this,'clover')">☘ 클로버</button>
+      <button class="obtn" onclick="setBg(this,'bubble')">🫧 비눗방울</button>
+      <button class="obtn" onclick="setBg(this,'snow')">❄ 눈꽃</button>
+      <button class="obtn" onclick="setBg(this,'sakura')">🌸 벚꽃</button>
+    </div>
+  </div>
+
+  <!-- 색상 -->
+  <div class="panel">
+    <div class="panel-title">🎨 색상</div>
+    <div class="crow">
+      <div class="ci"><input type="color" id="c-bg"     value="#0d1117" oninput="setColor('bg',this.value)"><label for="c-bg">배경</label></div>
+      <div class="ci"><input type="color" id="c-text"   value="#c9d1d9" oninput="setColor('tx',this.value)"><label for="c-text">글자</label></div>
+      <div class="ci"><input type="color" id="c-prompt" value="#3fb950" oninput="setColor('pr',this.value)"><label for="c-prompt">프롬프트 ›</label></div>
+      <div class="ci"><input type="color" id="c-cursor" value="#58a6ff" oninput="setColor('cu',this.value)"><label for="c-cursor">커서</label></div>
+    </div>
+  </div>
+
+  <!-- 에디터 -->
   <div class="toolbar">
-    <div class="section-label" style="margin:0;">SVG 코드 편집</div>
-    <div class="btn-group">
-      <button class="danger" onclick="resetCode()">↺ 초기화</button>
-      <button onclick="copyCode()">⎘ 복사</button>
-      <button class="primary" onclick="downloadSVG()">↓ SVG 다운로드</button>
+    <div class="slabel" style="margin:0">SVG 코드 편집</div>
+    <div class="bgroup">
+      <button class="danger" onclick="doReset()">↺ 초기화</button>
+      <button onclick="doCopy()">⎘ 복사</button>
+      <button class="primary" onclick="doDownload()">↓ SVG 다운로드</button>
     </div>
   </div>
-
-  <div class="editor-box">
-    <div class="editor-header">
-      <div class="dot r"></div>
-      <div class="dot y"></div>
-      <div class="dot g"></div>
-      <span class="editor-filename">typing-intro.svg</span>
-    </div>
+  <div class="ebox">
+    <div class="ehdr"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><span class="efn">typing-intro.svg</span></div>
     <textarea id="editor" spellcheck="false" autocorrect="off" autocomplete="off"></textarea>
   </div>
-
-  <div class="status-bar" id="status"></div>
+  <div class="status" id="status"></div>
 
   <div class="tips">
-    <h2>💡 수정 팁</h2>
+    <h2>💡 참고</h2>
     <ul>
-      <li><code>fill="#c9d1d9"</code> → 텍스트 색상 변경 (HEX 코드)</li>
-      <li><code>fill="#0d1117"</code> → 배경 색상 변경</li>
-      <li><code>font-size="22"</code> → 글자 크기 변경</li>
-      <li><code>dur="8s"</code> → 전체 루프 속도 (숫자 클수록 느리게)</li>
-      <li><code>fill="#3fb950"</code> → › 프롬프트 색상 / <code>fill="#58a6ff"</code> → 커서 색상</li>
-      <li>텍스트 내용을 바꾸면 <code>values</code>의 글자 너비도 다시 계산이 필요해요</li>
+      <li>너비가 잘리면 <code>width="530"</code>, <code>viewBox="0 0 530 78"</code>, <code>&lt;rect width="530"&gt;</code> 세 곳을 같이 키우세요</li>
+      <li>텍스트를 바꾸면 타닥타닥/슬라이드의 <code>values</code> 글자 너비도 다시 계산 필요</li>
+      <li>페이드인·떨어짐·바운스·글자별 바운스는 텍스트 자유롭게 바꿔도 돼요</li>
     </ul>
   </div>
-
   <footer>made with ♥ — 수정이 필요하면 Claude에게 물어보세요</footer>
 </div>
 
 <script>
-const DEFAULT_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="530" height="78" viewBox="0 0 530 78">
-  <defs>
-    <clipPath id="tc">
-      <rect x="32" y="0" height="78" width="0">
-        <animate
-          attributeName="width"
-          calcMode="discrete"
-          values="0;22;44;66;88;110;115;122;144;166;188;210;217;239;261;283;290;303;316;328;336;342;355;362;374;387;400;422;444;466;471;471;0;0"
-          keyTimes="0;0.0125;0.025;0.0375;0.05;0.0625;0.075;0.0875;0.1;0.1125;0.125;0.1375;0.15;0.1625;0.175;0.1875;0.2;0.2125;0.225;0.2375;0.25;0.2625;0.275;0.2875;0.3;0.3125;0.325;0.3375;0.35;0.3625;0.375;0.6875;0.6876;1"
-          dur="8s"
-          repeatCount="indefinite"/>
-      </rect>
-    </clipPath>
-  </defs>
+// ── 전역 상태 ──────────────────────────────────────────────────────────
+var S = {
+  effect : 'discrete',
+  font   : "'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif",
+  imp    : '',          // 구글 폰트 import URL
+  dur    : '8s',
+  bg     : 'none',
+  text   : '어서오세요. 성장하는 개발자 (본인이름)입니다.',
+  col    : { bg:'#0d1117', tx:'#c9d1d9', pr:'#3fb950', cu:'#58a6ff' }
+};
 
-  <rect width="530" height="78" rx="10" fill="#0d1117"/>
+var ed  = document.getElementById('editor');
+var pv  = document.getElementById('preview');
+var st  = document.getElementById('status');
 
-  <text x="12" y="50"
-    font-family="'Courier New', Courier, monospace"
-    font-size="20" font-weight="bold"
-    fill="#3fb950">›</text>
+// ── 배경 파티클 생성 ───────────────────────────────────────────────────
+// 반환: { defs:'', body:'' }  (defs 는 <clipPath> 로 bounds 클리핑용)
 
-  <text x="32" y="50"
-    font-family="'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif"
-    font-size="22"
-    fill="#c9d1d9"
-    clip-path="url(#tc)">어서오세요. 성장하는 개발자 hyejin ahn입니다.</text>
+function mkBg(W) {
+  var H = 78;
+  if (S.bg === 'none') return { defs:'', body:'' };
 
-  <rect y="28" width="2" height="24" rx="1" fill="#58a6ff">
-    <animate
-      attributeName="x"
-      calcMode="discrete"
-      values="32;54;76;98;120;142;147;154;176;198;220;242;249;271;293;315;322;335;348;360;368;374;387;394;406;419;432;454;476;498;503;503;32;32"
-      keyTimes="0;0.0125;0.025;0.0375;0.05;0.0625;0.075;0.0875;0.1;0.1125;0.125;0.1375;0.15;0.1625;0.175;0.1875;0.2;0.2125;0.225;0.2375;0.25;0.2625;0.275;0.2875;0.3;0.3125;0.325;0.3375;0.35;0.3625;0.375;0.6875;0.6876;1"
-      dur="8s"
-      repeatCount="indefinite"/>
-    <animate
-      attributeName="opacity"
-      values="1;0"
-      keyTimes="0;0.5"
-      calcMode="discrete"
-      dur="0.7s"
-      repeatCount="indefinite"/>
-  </rect>
-</svg>`;
+  var items = [];
 
-const editor = document.getElementById('editor');
-const preview = document.getElementById('preview');
-const status = document.getElementById('status');
+  if (S.bg === 'sparkle') {
+    // ✦ 들이 곳곳에서 명멸
+    [[.06,13,7,'#ffdd57',2.1,.0],[.18,67,5,'#79c0ff',1.7,.6],[.30,11,9,'#bc8cff',2.6,1.3],
+     [.44,69,6,'#ffdd57',1.9,.2],[.56,10,8,'#ff7eb3',3.1,1.7],[.68,68,7,'#79c0ff',2.3,.9],
+     [.80,12,9,'#bc8cff',2.8,.4],[.92,67,5,'#ffdd57',2.0,1.4],[.24,38,5,'#ff7eb3',1.5,.8],[.76,40,5,'#79c0ff',2.4,.1]]
+    .forEach(function(a){
+      var x=Math.round(a[0]*W),y=a[1],sz=a[2],col=a[3],dur=a[4],beg=a[5];
+      items.push('<text x="'+x+'" y="'+y+'" font-size="'+sz+'" fill="'+col+'" opacity="0" text-anchor="middle">✦'+
+        '<animate attributeName="opacity" values="0;0.8;0.2;0.8;0" keyTimes="0;.25;.5;.75;1" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1" dur="'+dur+'s" begin="'+beg+'s" repeatCount="indefinite"/></text>');
+    });
+  } else if (S.bg === 'star') {
+    // ★ 이 반짝
+    [[.06,12,11,'#ffdd57',2.5,.0],[.19,68,9,'#fff',2.0,.7],[.33,10,13,'#ffd700',3.2,1.4],
+     [.48,69,10,'#ffec6e',1.8,.3],[.62,11,12,'#fff',2.7,1.1],[.76,67,9,'#ffdd57',2.3,.5],[.90,13,11,'#ffd700',3.0,1.7]]
+    .forEach(function(a){
+      var x=Math.round(a[0]*W),y=a[1],sz=a[2],col=a[3],dur=a[4],beg=a[5];
+      items.push('<text x="'+x+'" y="'+y+'" font-size="'+sz+'" fill="'+col+'" opacity="0" text-anchor="middle">★'+
+        '<animate attributeName="opacity" values="0;1;0.2;1;0" keyTimes="0;.2;.5;.8;1" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1" dur="'+dur+'s" begin="'+beg+'s" repeatCount="indefinite"/></text>');
+    });
+  } else if (S.bg === 'heart') {
+    // ♥ 가 위로 떠오름
+    [[.07,66,50,10,2.5,.0,'#ff7eb3'],[.20,15,5,8,3.0,.9,'#ff9ec0'],[.35,68,52,12,2.2,1.6,'#ff7eb3'],
+     [.50,13,3,9,2.8,.4,'#ffb3d1'],[.65,67,51,11,2.4,1.2,'#ff7eb3'],[.80,14,4,8,3.2,.7,'#ff9ec0'],[.93,66,50,10,2.7,1.8,'#ffb3d1']]
+    .forEach(function(a){
+      var x=Math.round(a[0]*W),sy=a[1],ey=a[2],sz=a[3],dur=a[4],beg=a[5],col=a[6];
+      items.push('<text x="'+x+'" y="'+sy+'" font-size="'+sz+'" fill="'+col+'" opacity="0" text-anchor="middle">♥'+
+        '<animate attributeName="y" values="'+sy+';'+ey+'" dur="'+dur+'s" begin="'+beg+'s" repeatCount="indefinite"/>'+
+        '<animate attributeName="opacity" values="0;0.85;0.85;0" keyTimes="0;.15;.65;1" dur="'+dur+'s" begin="'+beg+'s" repeatCount="indefinite"/></text>');
+    });
+  } else if (S.bg === 'clover') {
+    // ☘ 가 아래서 위로
+    [[.07,2.5,.0,10],[.18,3.0,.9,8],[.32,2.3,1.6,12],[.46,2.8,.4,9],[.60,2.4,1.2,11],[.74,3.2,.7,8],[.88,2.7,1.8,10]]
+    .forEach(function(a){
+      var x=Math.round(a[0]*W),dur=a[1],beg=a[2],sz=a[3];
+      items.push('<text x="'+x+'" y="74" font-size="'+sz+'" fill="#3fb950" opacity="0" text-anchor="middle">☘'+
+        '<animate attributeName="y" values="74;4" dur="'+dur+'s" begin="'+beg+'s" repeatCount="indefinite"/>'+
+        '<animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;.1;.7;1" dur="'+dur+'s" begin="'+beg+'s" repeatCount="indefinite"/></text>');
+    });
+  } else if (S.bg === 'bubble') {
+    // ○ 비눗방울 — fill-opacity/stroke-opacity 로 투명도 지정 (rgba 미지원 대비)
+    [[.08,6,2.8,.0],[.22,9,3.5,.8],[.37,5,2.3,1.5],[.52,11,4.0,.3],[.66,7,3.1,1.2],[.80,10,3.8,.6],[.93,5,2.6,1.9],[.15,8,3.3,1.0]]
+    .forEach(function(a){
+      var cx=Math.round(a[0]*W),r=a[1],dur=a[2],beg=a[3],sy=74,ey=r+2;
+      var rx=cx+Math.round(r*.3), rr=Math.max(1,Math.round(r*.22));
+      items.push(
+        '<g opacity="0">'+
+          '<animate attributeName="opacity" values="0;0.75;0.75;0" keyTimes="0;.08;.78;1" dur="'+dur+'s" begin="'+beg+'s" repeatCount="indefinite"/>'+
+          '<circle cx="'+cx+'" cy="'+sy+'" r="'+r+'" fill="#b4dcff" fill-opacity="0.12" stroke="#b4dcff" stroke-opacity="0.55" stroke-width="1">'+
+            '<animate attributeName="cy" values="'+sy+';'+ey+'" dur="'+dur+'s" begin="'+beg+'s" repeatCount="indefinite"/>'+
+          '</circle>'+
+          '<circle cx="'+rx+'" cy="'+(sy-Math.round(r*.35))+'" r="'+rr+'" fill="#ffffff" fill-opacity="0.6">'+
+            '<animate attributeName="cy" values="'+(sy-Math.round(r*.35))+';'+(ey-Math.round(r*.35))+'" dur="'+dur+'s" begin="'+beg+'s" repeatCount="indefinite"/>'+
+          '</circle>'+
+        '</g>');
+    });
+  } else if (S.bg === 'snow') {
+    // ❄ 위에서 아래로 살랑살랑 — x 기본값 명시 필수!
+    [[.06,10,2.8,.0],[.18,12,3.5,.8],[.31,9,2.2,1.5],[.45,11,4.1,.3],[.59,10,3.0,1.2],[.72,13,3.7,.6],[.85,9,2.5,1.9],[.95,11,3.3,1.0]]
+    .forEach(function(a){
+      var x=Math.round(a[0]*W),sz=a[1],dur=a[2],beg=a[3];
+      items.push('<text x="'+x+'" y="-6" font-size="'+sz+'" fill="#aed6f1" opacity="0" text-anchor="middle">❄'+
+        '<animate attributeName="x" values="'+(x-6)+';'+(x+6)+';'+(x-6)+'" dur="'+dur+'s" begin="'+beg+'s" repeatCount="indefinite"/>'+
+        '<animate attributeName="y" values="-6;82" dur="'+dur+'s" begin="'+beg+'s" repeatCount="indefinite"/>'+
+        '<animate attributeName="opacity" values="0;0.8;0.8;0" keyTimes="0;.05;.85;1" dur="'+dur+'s" begin="'+beg+'s" repeatCount="indefinite"/></text>');
+    });
+  } else if (S.bg === 'sakura') {
+    // 🌸 위에서 아래로 흔들리며 — x 기본값 명시 필수!
+    var cols=['#ffb7c5','#ffc8d3','#ffd1dc','#ffaec0'];
+    [[.09,10,2.9,.0],[.23,11,3.6,.8],[.38,9,2.4,1.5],[.53,12,4.2,.3],[.67,10,3.2,1.2],[.81,11,3.9,.6],[.94,9,2.7,1.9]]
+    .forEach(function(a,i){
+      var x=Math.round(a[0]*W),sz=a[1],dur=a[2],beg=a[3],col=cols[i%4];
+      items.push('<text x="'+x+'" y="-6" font-size="'+sz+'" fill="'+col+'" opacity="0" text-anchor="middle">✿'+
+        '<animate attributeName="x" values="'+(x-14)+';'+(x+14)+';'+(x-14)+'" dur="'+dur+'s" begin="'+beg+'s" repeatCount="indefinite"/>'+
+        '<animate attributeName="y" values="-6;82" dur="'+dur+'s" begin="'+beg+'s" repeatCount="indefinite"/>'+
+        '<animate attributeName="opacity" values="0;0.85;0.85;0" keyTimes="0;.05;.82;1" dur="'+dur+'s" begin="'+beg+'s" repeatCount="indefinite"/></text>');
+    });
+  }
 
+  return {
+    defs : '\n    <clipPath id="bgc"><rect width="'+W+'" height="'+H+'"/></clipPath>',
+    body : '\n  <g clip-path="url(#bgc)">\n  '+items.join('\n  ')+'\n  </g>'
+  };
+}
+
+// ── SVG 생성 함수들 ────────────────────────────────────────────────────
+
+function fStyle() {
+  return S.imp ? '\n  <style>@import url(\'' + S.imp + '\');</style>' : '';
+}
+
+function genTyping(calcMode) {
+  var W=530, bg=mkBg(W);
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="78" viewBox="0 0 '+W+' 78">'+fStyle()+
+  '\n  <defs>'+
+    '\n    <clipPath id="tc"><rect x="32" y="0" height="78" width="0">'+
+      '<animate attributeName="width" calcMode="'+calcMode+'"'+
+      ' values="0;22;44;66;88;110;115;122;144;166;188;210;217;239;261;283;290;303;316;328;336;342;355;362;374;387;400;422;444;466;471;471;0;0"'+
+      ' keyTimes="0;.0125;.025;.0375;.05;.0625;.075;.0875;.1;.1125;.125;.1375;.15;.1625;.175;.1875;.2;.2125;.225;.2375;.25;.2625;.275;.2875;.3;.3125;.325;.3375;.35;.3625;.375;.6875;.6876;1"'+
+      ' dur="'+S.dur+'" repeatCount="indefinite"/></rect></clipPath>'+bg.defs+
+  '\n  </defs>'+
+  '\n  <rect width="'+W+'" height="78" rx="10" fill="'+S.col.bg+'"/>'+bg.body+
+  '\n  <text x="12" y="50" style="font-family:\'Courier New\',Courier,monospace" font-size="20" font-weight="bold" fill="'+S.col.pr+'">›</text>'+
+  '\n  <text x="32" y="50" style="font-family:'+S.font+'" font-size="22" fill="'+S.col.tx+'" clip-path="url(#tc)">'+S.text+'</text>'+
+  '\n  <rect y="28" width="2" height="24" rx="1" fill="'+S.col.cu+'">'+
+    '<animate attributeName="x" calcMode="'+calcMode+'"'+
+    ' values="32;54;76;98;120;142;147;154;176;198;220;242;249;271;293;315;322;335;348;360;368;374;387;394;406;419;432;454;476;498;503;503;32;32"'+
+    ' keyTimes="0;.0125;.025;.0375;.05;.0625;.075;.0875;.1;.1125;.125;.1375;.15;.1625;.175;.1875;.2;.2125;.225;.2375;.25;.2625;.275;.2875;.3;.3125;.325;.3375;.35;.3625;.375;.6875;.6876;1"'+
+    ' dur="'+S.dur+'" repeatCount="indefinite"/>'+
+    '<animate attributeName="opacity" values="1;0" keyTimes="0;0.5" calcMode="discrete" dur="0.7s" repeatCount="indefinite"/>'+
+  '</rect>'+
+  '\n</svg>';
+}
+
+function genFade() {
+  var W=530, bg=mkBg(W);
+  var kt='0;.12;.45;.75;.88;1', v='0;0;1;1;0;0', ks='0.4 0 0.2 1;0.4 0 0.2 1;0.4 0 0.2 1;0.4 0 0.2 1;0.4 0 0.2 1';
+  var defs = bg.defs ? '\n  <defs>'+bg.defs+'\n  </defs>' : '';
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="78" viewBox="0 0 '+W+' 78">'+fStyle()+defs+
+  '\n  <rect width="'+W+'" height="78" rx="10" fill="'+S.col.bg+'"/>'+bg.body+
+  '\n  <text x="12" y="50" style="font-family:\'Courier New\',Courier,monospace" font-size="20" font-weight="bold" fill="'+S.col.pr+'" opacity="0">›'+
+    '<animate attributeName="opacity" values="'+v+'" keyTimes="'+kt+'" calcMode="spline" keySplines="'+ks+'" dur="'+S.dur+'" repeatCount="indefinite"/>'+
+  '</text>'+
+  '\n  <text x="32" y="50" style="font-family:'+S.font+'" font-size="22" fill="'+S.col.tx+'" opacity="0">'+S.text+
+    '<animate attributeName="opacity" values="'+v+'" keyTimes="'+kt+'" calcMode="spline" keySplines="'+ks+'" dur="'+S.dur+'" repeatCount="indefinite"/>'+
+  '</text>'+
+  '\n</svg>';
+}
+
+function genDropOrBounce(type) {
+  var W=530, bg=mkBg(W);
+  var tr = type==='drop'
+    ? 'values="0,-50;0,0;0,0;0,-50" keyTimes="0;.22;.75;1" calcMode="spline" keySplines="0.2 0 0.3 1;0 0 1 1;0.6 0 0.8 0"'
+    : 'values="0,-60;0,10;0,-6;0,3;0,0;0,0;0,-60" keyTimes="0;.18;.27;.33;.38;.75;1"';
+  var op = type==='drop'
+    ? 'values="0;1;1;0" keyTimes="0;.22;.75;1"'
+    : 'values="0;1;1;1;1;1;0" keyTimes="0;.18;.27;.33;.38;.75;1"';
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="78" viewBox="0 0 '+W+' 78">'+fStyle()+
+  '\n  <defs><clipPath id="bd"><rect width="'+W+'" height="78"/></clipPath>'+bg.defs+'\n  </defs>'+
+  '\n  <rect width="'+W+'" height="78" rx="10" fill="'+S.col.bg+'"/>'+bg.body+
+  '\n  <g clip-path="url(#bd)">'+
+    '<animateTransform attributeName="transform" type="translate" '+tr+' dur="'+S.dur+'" repeatCount="indefinite"/>'+
+    '<animate attributeName="opacity" '+op+' dur="'+S.dur+'" repeatCount="indefinite"/>'+
+    '<text x="12" y="50" style="font-family:\'Courier New\',Courier,monospace" font-size="20" font-weight="bold" fill="'+S.col.pr+'">›</text>'+
+    '<text x="32" y="50" style="font-family:'+S.font+'" font-size="22" fill="'+S.col.tx+'">'+S.text+'</text>'+
+  '</g>'+
+  '\n</svg>';
+}
+
+function genCharBounce() {
+  function cw(ch) {
+    if(ch===' ')return 7; if('.,!?:;'.includes(ch))return 6;
+    var c=ch.codePointAt(0);
+    if((c>=0xAC00&&c<=0xD7A3)||(c>=0x4E00&&c<=0x9FFF))return 22;
+    if(ch>='A'&&ch<='Z')return 15; if('ijlft'.includes(ch))return 8; return 12;
+  }
+  var chars=[...S.text], N=chars.length, td=parseFloat(S.dur);
+  var delay=Math.min(.09,(td*.38)/N), dis=td*.70;
+  var tw=0; chars.forEach(function(ch){tw+=cw(ch);});
+  var W=Math.max(530,32+tw+24), bg=mkBg(W);
+  var elems='', x=32;
+  chars.forEach(function(ch,i){
+    var ta=i*delay, tOv=ta+.12, tBn=ta+.21, tSt=Math.min(ta+.30,dis-.05), f=function(v){return Math.min(+(v/td).toFixed(4),.9999);};
+    if(ch!==' '){
+      elems+='\n  <text x="'+x+'" y="50" opacity="0" style="font-family:'+S.font+'" font-size="22" fill="'+S.col.tx+'">'+ch+
+        '<animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;'+f(ta)+';'+f(dis)+';'+f(dis+.01)+';1" calcMode="discrete" dur="'+S.dur+'" repeatCount="indefinite"/>'+
+        '<animateTransform attributeName="transform" type="translate" values="0 -40;0 -40;0 8;0 -3;0 0;0 0;0 -40;0 -40" keyTimes="0;'+f(ta)+';'+f(tOv)+';'+f(tBn)+';'+f(tSt)+';'+f(dis)+';'+f(dis+.01)+';1" dur="'+S.dur+'" repeatCount="indefinite"/>'+
+      '</text>';
+    }
+    x+=cw(ch);
+  });
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="78" viewBox="0 0 '+W+' 78">'+fStyle()+
+  '\n  <defs><clipPath id="bd2"><rect width="'+W+'" height="78"/></clipPath>'+bg.defs+'\n  </defs>'+
+  '\n  <rect width="'+W+'" height="78" rx="10" fill="'+S.col.bg+'"/>'+bg.body+
+  '\n  <text x="12" y="50" style="font-family:\'Courier New\',Courier,monospace" font-size="20" font-weight="bold" fill="'+S.col.pr+'">›</text>'+
+  '\n  <g clip-path="url(#bd2)">'+elems+'\n  </g>'+
+  '\n</svg>';
+}
+
+function genSVG() {
+  switch(S.effect) {
+    case 'linear':     return genTyping('linear');
+    case 'fade':       return genFade();
+    case 'drop':       return genDropOrBounce('drop');
+    case 'bounce':     return genDropOrBounce('bounce');
+    case 'charbounce': return genCharBounce();
+    default:           return genTyping('discrete');
+  }
+}
+
+// ── 렌더링 ─────────────────────────────────────────────────────────────
 function render(code) {
   try {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(code, 'image/svg+xml');
-    if (doc.querySelector('parsererror')) {
-      status.className = 'status-bar error';
-      status.textContent = '⚠ SVG 문법 오류가 있어요. 태그를 확인해보세요.';
-      return;
+    var doc = new DOMParser().parseFromString(code,'image/svg+xml');
+    if(doc.querySelector('parsererror')){
+      st.className='status err'; st.textContent='⚠ SVG 문법 오류가 있어요.'; return;
     }
-    preview.innerHTML = code;
-    status.className = 'status-bar ok';
-    status.textContent = '✓ 정상';
-  } catch(e) {
-    status.className = 'status-bar error';
-    status.textContent = '⚠ ' + e.message;
-  }
+    pv.innerHTML=code; st.className='status ok'; st.textContent='✓ 정상';
+  } catch(e){ st.className='status err'; st.textContent='⚠ '+e.message; }
 }
 
-function resetCode() {
-  if (confirm('초기 코드로 되돌릴까요?')) {
-    editor.value = DEFAULT_SVG;
-    render(DEFAULT_SVG);
-  }
+function regen() {
+  var svg=genSVG(); ed.value=svg;
+  if(S.imp){
+    var fn=S.font.replace(/['"]/g,'').split(',')[0].trim();
+    document.fonts.load('16px "'+fn+'"').finally(function(){render(svg);});
+  } else { render(svg); }
 }
 
-function copyCode() {
-  navigator.clipboard.writeText(editor.value).then(() => {
-    status.className = 'status-bar ok';
-    status.textContent = '✓ 클립보드에 복사됐어요!';
-    setTimeout(() => { status.textContent = '✓ 정상'; }, 2000);
+// ── 텍스트 추출 (효과 전환 시 현재 텍스트 유지) ────────────────────────
+function extractText() {
+  try {
+    var doc=new DOMParser().parseFromString(ed.value,'image/svg+xml');
+    if(doc.querySelector('parsererror'))return null;
+    var all=Array.from(doc.querySelectorAll('text'));
+    var main=all.find(function(t){return t.textContent.trim().length>5&&!t.textContent.includes('›');});
+    if(main)return main.textContent.trim();
+    var chars=all.filter(function(t){return !t.textContent.includes('›')&&t.textContent.trim();});
+    if(chars.length>3)return chars.map(function(t){return t.textContent.trim();}).join('');
+    return null;
+  } catch(e){return null;}
+}
+
+// ── 버튼 핸들러 ────────────────────────────────────────────────────────
+function activate(btn,groupId) {
+  document.getElementById(groupId).querySelectorAll('.obtn').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+}
+
+function setEffect(btn,e){ activate(btn,'efg'); S.effect=e; regen(); }
+function setSpeed(btn,d) { activate(btn,'spg'); S.dur=d;    regen(); }
+function setBg(btn,b)    { activate(btn,'bgg'); S.bg=b;     regen(); }
+
+function setFont(btn) {
+  activate(btn,'fg');
+  S.font=btn.dataset.font; S.imp=btn.dataset.imp||''; regen();
+}
+
+function setColor(key,val) { S.col[key]=val; regen(); }
+
+function doReset() {
+  if(!confirm('초기 코드로 되돌릴까요?'))return;
+  S.effect='discrete'; S.font="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif";
+  S.imp=''; S.dur='8s'; S.bg='none'; S.text='어서오세요. 성장하는 개발자 hyejin ahn입니다.';
+  S.col={bg:'#0d1117',tx:'#c9d1d9',pr:'#3fb950',cu:'#58a6ff'};
+  document.getElementById('c-bg').value='#0d1117'; document.getElementById('c-text').value='#c9d1d9';
+  document.getElementById('c-prompt').value='#3fb950'; document.getElementById('c-cursor').value='#58a6ff';
+  ['efg','fg','spg','bgg'].forEach(function(id){
+    document.getElementById(id).querySelectorAll('.obtn').forEach(function(b){b.classList.remove('on');});
+    document.getElementById(id).querySelector('.obtn').classList.add('on');
+  });
+  document.getElementById('spg').querySelectorAll('.obtn')[1].classList.add('on');
+  document.getElementById('spg').querySelectorAll('.obtn')[0].classList.remove('on');
+  regen();
+}
+
+function doCopy() {
+  navigator.clipboard.writeText(ed.value).then(function(){
+    st.className='status ok'; st.textContent='✓ 복사됐어요!';
+    setTimeout(function(){st.textContent='✓ 정상';},2000);
   });
 }
 
-function downloadSVG() {
-  const blob = new Blob([editor.value], { type: 'image/svg+xml;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'typing-intro.svg';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+function doDownload() {
+  var blob=new Blob([ed.value],{type:'image/svg+xml;charset=utf-8'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='typing-intro.svg';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
-editor.addEventListener('input', () => render(editor.value));
+ed.addEventListener('input',function(){
+  var t=extractText(); if(t)S.text=t; render(ed.value);
+});
 
-editor.value = DEFAULT_SVG;
-render(DEFAULT_SVG);
+// 초기 로드
+regen();
 </script>
 </body>
 </html>
