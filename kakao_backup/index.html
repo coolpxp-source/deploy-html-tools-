@@ -12,9 +12,8 @@ body {
   background: #f0f0f0;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   padding: 30px 16px;
-  min-height: 100vh;
   height: 100vh;      /* 추가 */
   overflow: hidden
 }
@@ -29,7 +28,7 @@ body {
   overflow: hidden;
   background: #fff;
   width: 100%;
-  height: 100vh;
+  height: 90vh;
   max-width: 860px;
 }
 
@@ -38,7 +37,7 @@ body {
   border-right: 1px solid #ddd;
   display: flex;
   flex-direction: column;
-  max-height: 765px;
+  height: 100%;
 }
 
 .panel h2 {
@@ -117,7 +116,7 @@ textarea { height: 72px; line-height: 1.5; }
 
 /* ── 오른쪽 미리보기 영역 ── */
 .preview-col { display: flex; flex-direction: column; }
-.preview { display: flex; flex-direction: column; flex: 1; overflow-y: auto; max-height: 700px; transition: background .2s; }
+.preview { display: flex; flex-direction: column; flex: 1; overflow-y: auto; transition: background .2s; }
 
 /* ── 미리보기 헤더 ── */
 .preview-header { background: #3a1d96; padding: 10px 14px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
