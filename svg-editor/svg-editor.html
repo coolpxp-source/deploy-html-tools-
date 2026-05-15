@@ -76,7 +76,7 @@ footer{margin-top:32px;text-align:center;font-size:12px;color:var(--muted);opaci
   <div class="panel">
     <div class="panel-title">📝 텍스트</div>
     <input type="text" id="text-input"
-      value="어서오세요. 성장하는 개발자 (본인 이름)입니다."
+      value="어서오세요. 성장하는 개발자 hyejin ahn입니다."
       oninput="S.text=this.value.trim()||'텍스트를 입력하세요'; regen()"
       style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;font-size:15px;outline:none;"
       placeholder="여기에 소개글을 입력하세요"/>
@@ -87,11 +87,41 @@ footer{margin-top:32px;text-align:center;font-size:12px;color:var(--muted);opaci
   <div class="panel">
     <div class="panel-title">🔤 폰트</div>
     <div class="orow" id="fg">
-      <span class="fnote" style="margin:0">시스템 폰트</span>
-      <button class="obtn on" data-font="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif" data-imp="" onclick="setFont(this)">기본 고딕</button>
+      <span class="fnote" style="margin:0">시스템 폰트 — 한글 계열</span>
+      <button class="obtn on"  data-font="'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif" data-imp="" onclick="setFont(this)">맑은 고딕</button>
+      <button class="obtn" data-font="'Gulim','Apple SD Gothic Neo',sans-serif" data-imp="" onclick="setFont(this)">굴림</button>
+      <button class="obtn" data-font="'GulimChe','Gulim','Apple SD Gothic Neo',monospace" data-imp="" onclick="setFont(this)">굴림체</button>
+      <button class="obtn" data-font="'Dotum','Apple SD Gothic Neo',sans-serif" data-imp="" onclick="setFont(this)">돋움</button>
+      <button class="obtn" data-font="'DotumChe','Dotum','Apple SD Gothic Neo',monospace" data-imp="" onclick="setFont(this)">돋움체</button>
+      <button class="obtn" style="font-family:'Batang',serif" data-font="'Batang','AppleMyungjo','Apple SD Gothic Neo',serif" data-imp="" onclick="setFont(this)">바탕</button>
+      <button class="obtn" style="font-family:'BatangChe',serif" data-font="'BatangChe','Batang','AppleMyungjo',serif" data-imp="" onclick="setFont(this)">바탕체</button>
+      <button class="obtn" style="font-family:'Gungsuh',serif" data-font="'Gungsuh','AppleMyungjo','Apple SD Gothic Neo',serif" data-imp="" onclick="setFont(this)">궁서</button>
+      <button class="obtn" style="font-family:'GungsuhChe',serif" data-font="'GungsuhChe','Gungsuh','AppleMyungjo',serif" data-imp="" onclick="setFont(this)">궁서체</button>
+      <button class="obtn" style="font-family:'Apple Gothic',sans-serif" data-font="'Apple Gothic','Apple SD Gothic Neo','Malgun Gothic',sans-serif" data-imp="" onclick="setFont(this)">Apple Gothic 🍎</button>
+
+      <div class="div"></div>
+      <span class="fnote" style="margin:0">나눔 계열 (Mac 기본 · Windows 일부)</span>
+      <button class="obtn" style="font-family:'Nanum Gothic',sans-serif" data-font="'Nanum Gothic','NanumGothic','Apple SD Gothic Neo',sans-serif" data-imp="" onclick="setFont(this)">나눔고딕</button>
+      <button class="obtn" style="font-family:'Nanum Gothic Bold',sans-serif;font-weight:bold" data-font="'Nanum Gothic Bold','Nanum Gothic','Apple SD Gothic Neo',sans-serif" data-imp="" onclick="setFont(this)">나눔고딕 Bold</button>
+      <button class="obtn" style="font-family:'Nanum Myeongjo',serif" data-font="'Nanum Myeongjo','NanumMyeongjo','AppleMyungjo',serif" data-imp="" onclick="setFont(this)">나눔명조</button>
+      <button class="obtn" style="font-family:'Nanum Brush Script',cursive" data-font="'Nanum Brush Script','NanumBrushScript','Apple SD Gothic Neo',cursive" data-imp="" onclick="setFont(this)">나눔붓 ✍</button>
+      <button class="obtn" style="font-family:'Nanum Pen Script',cursive" data-font="'Nanum Pen Script','NanumPenScript','Apple SD Gothic Neo',cursive" data-imp="" onclick="setFont(this)">나눔펜 🖊</button>
+
+      <div class="div"></div>
+      <span class="fnote" style="margin:0">시스템 폰트 — 영문+한글 혼합</span>
+      <button class="obtn" style="font-family:'Verdana',sans-serif" data-font="'Verdana','Apple SD Gothic Neo','Malgun Gothic',sans-serif" data-imp="" onclick="setFont(this)">Verdana</button>
+      <button class="obtn" style="font-family:'Tahoma',sans-serif" data-font="'Tahoma','Apple SD Gothic Neo','Malgun Gothic',sans-serif" data-imp="" onclick="setFont(this)">Tahoma</button>
+      <button class="obtn" style="font-family:'Trebuchet MS',sans-serif" data-font="'Trebuchet MS','Apple SD Gothic Neo','Malgun Gothic',sans-serif" data-imp="" onclick="setFont(this)">Trebuchet MS</button>
+      <button class="obtn" style="font-family:'Impact',sans-serif" data-font="'Impact','Apple SD Gothic Neo','Malgun Gothic',sans-serif" data-imp="" onclick="setFont(this)">Impact 💥</button>
+      <button class="obtn" style="font-family:'Arial',sans-serif" data-font="Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif" data-imp="" onclick="setFont(this)">Arial</button>
+      <button class="obtn" style="font-family:'Georgia',serif" data-font="'Georgia','AppleMyungjo','Batang',serif" data-imp="" onclick="setFont(this)">Georgia</button>
+      <button class="obtn" style="font-family:'Times New Roman',serif" data-font="'Times New Roman','AppleMyungjo','Batang',serif" data-imp="" onclick="setFont(this)">Times New Roman</button>
+
+      <div class="div"></div>
+      <span class="fnote" style="margin:0">시스템 폰트 — 고정폭 (코드 느낌)</span>
       <button class="obtn" style="font-family:'Courier New',monospace" data-font="'Courier New',Courier,monospace" data-imp="" onclick="setFont(this)">Courier New</button>
-      <button class="obtn" data-font="Arial,'Apple SD Gothic Neo','Noto Sans KR',sans-serif" data-imp="" onclick="setFont(this)">Arial</button>
-      <button class="obtn" style="font-family:'Georgia',serif" data-font="'Georgia','Apple SD Gothic Neo',serif" data-imp="" onclick="setFont(this)">Georgia</button>
+      <button class="obtn" style="font-family:'Consolas',monospace" data-font="'Consolas','Menlo','Monaco','Courier New',monospace" data-imp="" onclick="setFont(this)">Consolas</button>
+      <button class="obtn" style="font-family:'Lucida Console',monospace" data-font="'Lucida Console','Monaco',monospace" data-imp="" onclick="setFont(this)">Lucida Console</button>
       <div class="div"></div>
       <span class="fnote" style="margin:0">구글 폰트 (브라우저·티스토리)</span>
       <button class="obtn" style="font-family:'Noto Sans KR'" data-font="'Noto Sans KR',sans-serif" data-imp="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" onclick="setFont(this)">Noto Sans KR</button>
@@ -144,6 +174,24 @@ footer{margin-top:32px;text-align:center;font-size:12px;color:var(--muted);opaci
     </div>
   </div>
 
+  <!-- 배경 그라데이션 -->
+  <div class="panel">
+    <div class="panel-title">🎨 배경 그라데이션</div>
+    <div class="orow" id="grg">
+      <button class="obtn on"  onclick="setGrad(this,'none')"   style="background:var(--surface2)">단색</button>
+      <button class="obtn" onclick="setGrad(this,'sunset')"  style="background:linear-gradient(to right,#ff6b6b,#feca57);color:#222;border-color:transparent">🌅 노을</button>
+      <button class="obtn" onclick="setGrad(this,'ocean')"   style="background:linear-gradient(to right,#0f3460,#533483);color:#fff;border-color:transparent">🌊 바다</button>
+      <button class="obtn" onclick="setGrad(this,'galaxy')"  style="background:linear-gradient(135deg,#1a1a2e,#e94560);color:#fff;border-color:transparent">🌌 우주</button>
+      <button class="obtn" onclick="setGrad(this,'spring')"  style="background:linear-gradient(to right,#f093fb,#f5576c);color:#fff;border-color:transparent">🌸 봄</button>
+      <button class="obtn" onclick="setGrad(this,'forest')"  style="background:linear-gradient(to right,#11998e,#38ef7d);color:#222;border-color:transparent">🍀 숲</button>
+      <button class="obtn" onclick="setGrad(this,'purple')"  style="background:linear-gradient(to right,#4a00e0,#8e2de2);color:#fff;border-color:transparent">💜 보라</button>
+      <button class="obtn" onclick="setGrad(this,'sky')"     style="background:linear-gradient(to right,#00c6ff,#0072ff);color:#fff;border-color:transparent">☁️ 하늘</button>
+      <button class="obtn" onclick="setGrad(this,'night')"   style="background:linear-gradient(to bottom,#232526,#414345);color:#fff;border-color:transparent">🌙 밤</button>
+      <button class="obtn" onclick="setGrad(this,'rose')"    style="background:linear-gradient(to right,#ff758c,#ff7eb3);color:#fff;border-color:transparent">🌹 로즈</button>
+      <button class="obtn" onclick="setGrad(this,'mint')"    style="background:linear-gradient(to right,#00b09b,#96c93d);color:#222;border-color:transparent">🌿 민트</button>
+    </div>
+  </div>
+
   <!-- 색상 -->
   <div class="panel">
     <div class="panel-title">🎨 색상</div>
@@ -171,11 +219,12 @@ footer{margin-top:32px;text-align:center;font-size:12px;color:var(--muted);opaci
   <div class="status" id="status"></div>
 
   <div class="tips">
-    <h2>💡 참고</h2>
+    <h2>💡 중요: 폰트 관련 안내</h2>
     <ul>
-      <li>너비가 잘리면 <code>width="530"</code>, <code>viewBox="0 0 530 78"</code>, <code>&lt;rect width="530"&gt;</code> 세 곳을 같이 키우세요</li>
-      <li>텍스트를 바꾸면 타닥타닥/슬라이드의 <code>values</code> 글자 너비도 다시 계산 필요</li>
-      <li>페이드인·떨어짐·바운스·글자별 바운스는 텍스트 자유롭게 바꿔도 돼요</li>
+      <li><b style="color:#f85149">GitHub README에 등록할 때:</b> 보안 정책상 구글 폰트(웹 폰트)는 <b>무시됩니다.</b> 시스템 폰트 메뉴의 폰트를 권장해요.</li>
+      <li><b style="color:#3fb950">티스토리 블로그·일반 웹사이트에 직접 삽입할 때:</b> 구글 폰트가 잘 작동해요.</li>
+      <li>너비가 잘리면 <code>width="530"</code>, <code>viewBox="0 0 530 78"</code>, <code>&lt;rect width="530"&gt;</code> 세 곳을 같이 키우세요.</li>
+      <li>텍스트를 바꾸면 타닥타닥·슬라이드의 <code>values</code> 글자 너비도 다시 계산 필요해요.</li>
     </ul>
   </div>
   <footer>made with ♥ — 수정이 필요하면 Claude에게 물어보세요</footer>
@@ -185,11 +234,12 @@ footer{margin-top:32px;text-align:center;font-size:12px;color:var(--muted);opaci
 // ── 전역 상태 ──────────────────────────────────────────────────────────
 var S = {
   effect : 'discrete',
-  font   : "'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif",
+  font   : "'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif",
   imp    : '',          // 구글 폰트 import URL
   dur    : '8s',
   bg     : 'none',
   text   : '어서오세요. 성장하는 개발자 hyejin ahn입니다.',
+  grad   : 'none',
   col    : { bg:'#0d1117', tx:'#c9d1d9', pr:'#3fb950', cu:'#58a6ff' }
 };
 
@@ -296,6 +346,37 @@ function fStyle() {
   return S.imp ? '\n  <style>@import url(\'' + S.imp + '\');</style>' : '';
 }
 
+// ── 배경 그라데이션 ────────────────────────────────────────────────────
+// 각 프리셋은 [색상1, 색상2, 방향] 형태예요.
+// 방향: 'h'=가로, 'v'=세로, 'd'=대각선
+var GRADS = {
+  none:   null,
+  sunset: ['#ff6b6b','#feca57','h'],
+  ocean:  ['#0f3460','#533483','h'],
+  galaxy: ['#1a1a2e','#e94560','d'],
+  spring: ['#f093fb','#f5576c','h'],
+  forest: ['#11998e','#38ef7d','h'],
+  purple: ['#4a00e0','#8e2de2','h'],
+  sky:    ['#00c6ff','#0072ff','h'],
+  night:  ['#232526','#414345','v'],
+  rose:   ['#ff758c','#ff7eb3','h'],
+  mint:   ['#00b09b','#96c93d','h'],
+};
+
+function gradDefs() {
+  var g = GRADS[S.grad];
+  if (!g) return '';
+  var x2 = g[2]==='v' ? '0' : '1', y2 = g[2]==='v' ? '1' : (g[2]==='d' ? '1' : '0');
+  return '<linearGradient id="bgg" x1="0" y1="0" x2="'+x2+'" y2="'+y2+'">' +
+    '<stop offset="0%" stop-color="'+g[0]+'"/>' +
+    '<stop offset="100%" stop-color="'+g[1]+'"/>' +
+    '</linearGradient>';
+}
+
+function bgFill() {
+  return (S.grad && S.grad !== 'none' && GRADS[S.grad]) ? 'url(#bgg)' : S.col.bg;
+}
+
 function genTyping(calcMode) {
   var W=530, bg=mkBg(W);
   return '<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="78" viewBox="0 0 '+W+' 78">'+fStyle()+
@@ -304,9 +385,9 @@ function genTyping(calcMode) {
       '<animate attributeName="width" calcMode="'+calcMode+'"'+
       ' values="0;22;44;66;88;110;115;122;144;166;188;210;217;239;261;283;290;303;316;328;336;342;355;362;374;387;400;422;444;466;471;471;0;0"'+
       ' keyTimes="0;.0125;.025;.0375;.05;.0625;.075;.0875;.1;.1125;.125;.1375;.15;.1625;.175;.1875;.2;.2125;.225;.2375;.25;.2625;.275;.2875;.3;.3125;.325;.3375;.35;.3625;.375;.6875;.6876;1"'+
-      ' dur="'+S.dur+'" repeatCount="indefinite"/></rect></clipPath>'+bg.defs+
+      ' dur="'+S.dur+'" repeatCount="indefinite"/></rect></clipPath>'+bg.defs+gradDefs()+
   '\n  </defs>'+
-  '\n  <rect width="'+W+'" height="78" rx="10" fill="'+S.col.bg+'"/>'+bg.body+
+  '\n  <rect width="'+W+'" height="78" rx="10" fill="'+bgFill()+'"/>'+bg.body+
   '\n  <text x="12" y="50" font-family="\'Courier New\',Courier,monospace" font-size="20" font-weight="bold" fill="'+S.col.pr+'">›</text>'+
   '\n  <text x="32" y="50" font-family="'+S.font+'" font-size="22" fill="'+S.col.tx+'" clip-path="url(#tc)">'+S.text+'</text>'+
   '\n  <rect y="28" width="2" height="24" rx="1" fill="'+S.col.cu+'">'+
@@ -322,9 +403,9 @@ function genTyping(calcMode) {
 function genFade() {
   var W=530, bg=mkBg(W);
   var kt='0;.12;.45;.75;.88;1', v='0;0;1;1;0;0', ks='0.4 0 0.2 1;0.4 0 0.2 1;0.4 0 0.2 1;0.4 0 0.2 1;0.4 0 0.2 1';
-  var defs = bg.defs ? '\n  <defs>'+bg.defs+'\n  </defs>' : '';
+  var defs = bg.defs ? '\n  <defs>'+bg.defs+gradDefs()+'\n  </defs>' : '';
   return '<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="78" viewBox="0 0 '+W+' 78">'+fStyle()+defs+
-  '\n  <rect width="'+W+'" height="78" rx="10" fill="'+S.col.bg+'"/>'+bg.body+
+  '\n  <rect width="'+W+'" height="78" rx="10" fill="'+bgFill()+'"/>'+bg.body+
   '\n  <text x="12" y="50" style="font-family:\'Courier New\',Courier,monospace" font-size="20" font-weight="bold" fill="'+S.col.pr+'" opacity="0">›'+
     '<animate attributeName="opacity" values="'+v+'" keyTimes="'+kt+'" calcMode="spline" keySplines="'+ks+'" dur="'+S.dur+'" repeatCount="indefinite"/>'+
   '</text>'+
@@ -343,8 +424,8 @@ function genDropOrBounce(type) {
     ? 'values="0;1;1;0" keyTimes="0;.22;.75;1"'
     : 'values="0;1;1;1;1;1;0" keyTimes="0;.18;.27;.33;.38;.75;1"';
   return '<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="78" viewBox="0 0 '+W+' 78">'+fStyle()+
-  '\n  <defs><clipPath id="bd"><rect width="'+W+'" height="78"/></clipPath>'+bg.defs+'\n  </defs>'+
-  '\n  <rect width="'+W+'" height="78" rx="10" fill="'+S.col.bg+'"/>'+bg.body+
+  '\n  <defs><clipPath id="bd"><rect width="'+W+'" height="78"/></clipPath>'+bg.defs+gradDefs()+'\n  </defs>'+
+  '\n  <rect width="'+W+'" height="78" rx="10" fill="'+bgFill()+'"/>'+bg.body+
   '\n  <g clip-path="url(#bd)">'+
     '<animateTransform attributeName="transform" type="translate" '+tr+' dur="'+S.dur+'" repeatCount="indefinite"/>'+
     '<animate attributeName="opacity" '+op+' dur="'+S.dur+'" repeatCount="indefinite"/>'+
@@ -377,8 +458,8 @@ function genCharBounce() {
     x+=cw(ch);
   });
   return '<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="78" viewBox="0 0 '+W+' 78">'+fStyle()+
-  '\n  <defs><clipPath id="bd2"><rect width="'+W+'" height="78"/></clipPath>'+bg.defs+'\n  </defs>'+
-  '\n  <rect width="'+W+'" height="78" rx="10" fill="'+S.col.bg+'"/>'+bg.body+
+  '\n  <defs><clipPath id="bd2"><rect width="'+W+'" height="78"/></clipPath>'+bg.defs+gradDefs()+'\n  </defs>'+
+  '\n  <rect width="'+W+'" height="78" rx="10" fill="'+bgFill()+'"/>'+bg.body+
   '\n  <text x="12" y="50" style="font-family:\'Courier New\',Courier,monospace" font-size="20" font-weight="bold" fill="'+S.col.pr+'">›</text>'+
   '\n  <g clip-path="url(#bd2)">'+elems+'\n  </g>'+
   '\n</svg>';
@@ -448,16 +529,17 @@ function setFont(btn) {
 }
 
 function setColor(key,val) { S.col[key]=val; regen(); }
+function setGrad(btn,g)     { activate(btn,'grg'); S.grad=g; regen(); }
 
 function doReset() {
   if(!confirm('초기 코드로 되돌릴까요?'))return;
-  S.effect='discrete'; S.font="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif";
-  S.imp=''; S.dur='8s'; S.bg='none'; S.text='어서오세요. 성장하는 개발자 hyejin ahn입니다.';
+  S.effect='discrete'; S.font="'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif";
+  S.imp=''; S.dur='8s'; S.bg='none'; S.grad='none'; S.text='어서오세요. 성장하는 개발자 hyejin ahn입니다.';
   document.getElementById('text-input').value = S.text;
   S.col={bg:'#0d1117',tx:'#c9d1d9',pr:'#3fb950',cu:'#58a6ff'};
   document.getElementById('c-bg').value='#0d1117'; document.getElementById('c-text').value='#c9d1d9';
   document.getElementById('c-prompt').value='#3fb950'; document.getElementById('c-cursor').value='#58a6ff';
-  ['efg','fg','spg','bgg'].forEach(function(id){
+  ['efg','fg','spg','bgg','grg'].forEach(function(id){
     document.getElementById(id).querySelectorAll('.obtn').forEach(function(b){b.classList.remove('on');});
     document.getElementById(id).querySelector('.obtn').classList.add('on');
   });
