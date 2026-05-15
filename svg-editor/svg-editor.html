@@ -76,7 +76,7 @@ footer{margin-top:32px;text-align:center;font-size:12px;color:var(--muted);opaci
   <div class="panel">
     <div class="panel-title">📝 텍스트</div>
     <input type="text" id="text-input"
-      value="어서오세요. 성장하는 개발자 hyejin ahn입니다."
+      value="어서오세요. 성장하는 개발자 (본인 이름)입니다."
       oninput="S.text=this.value.trim()||'텍스트를 입력하세요'; regen()"
       style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;font-size:15px;outline:none;"
       placeholder="여기에 소개글을 입력하세요"/>
@@ -203,6 +203,17 @@ footer{margin-top:32px;text-align:center;font-size:12px;color:var(--muted);opaci
     </div>
   </div>
 
+  <!-- 티스토리 삽입 코드 -->
+  <div class="panel">
+    <div class="panel-title">📋 티스토리 삽입 코드</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">HTML 모드 상단에 아래 코드를 붙여넣고, <code>이미지_경로</code> 부분을 실제 SVG 파일 경로로 바꾸세요.</p>
+    <div style="position:relative">
+      <pre id="tistory-code" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 44px 14px 16px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.8;color:var(--text);white-space:pre-wrap;word-break:break-all;margin-bottom:8px"></pre>
+      <button id="tistory-copy-btn" onclick="copyTistory()" style="position:absolute;top:10px;right:10px;padding:4px 10px;font-size:12px;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer">⎘ 복사</button>
+    </div>
+    <p style="font-size:12px;color:var(--muted);">💡 구글 폰트를 선택했을 때만 <code>&lt;link&gt;</code> 태그가 포함돼요. 시스템 폰트는 link 태그 없이 이미지 태그만 사용하세요.</p>
+  </div>
+
   <!-- 에디터 -->
   <div class="toolbar">
     <div class="slabel" style="margin:0">SVG 코드 편집</div>
@@ -227,7 +238,7 @@ footer{margin-top:32px;text-align:center;font-size:12px;color:var(--muted);opaci
       <li>텍스트를 바꾸면 타닥타닥·슬라이드의 <code>values</code> 글자 너비도 다시 계산 필요해요.</li>
     </ul>
   </div>
-  <footer>made with ♥ — 수정이 필요하면 Claude에게 물어보세요</footer>
+  <footer>made with ♥ — 수정이 필요하면 coolpxp@gmail.com으로 메일 주세요</footer>
 </div>
 
 <script>
@@ -238,7 +249,7 @@ var S = {
   imp    : '',          // 구글 폰트 import URL
   dur    : '8s',
   bg     : 'none',
-  text   : '어서오세요. 성장하는 개발자 hyejin ahn입니다.',
+  text   : '어서오세요. 성장하는 개발자 (본인 이름)입니다.',
   grad   : 'none',
   col    : { bg:'#0d1117', tx:'#c9d1d9', pr:'#3fb950', cu:'#58a6ff' }
 };
@@ -403,7 +414,7 @@ function genTyping(calcMode) {
 function genFade() {
   var W=530, bg=mkBg(W);
   var kt='0;.12;.45;.75;.88;1', v='0;0;1;1;0;0', ks='0.4 0 0.2 1;0.4 0 0.2 1;0.4 0 0.2 1;0.4 0 0.2 1;0.4 0 0.2 1';
-  var defs = bg.defs ? '\n  <defs>'+bg.defs+gradDefs()+'\n  </defs>' : '';
+  var defs = (bg.defs || gradDefs()) ? '\n  <defs>'+bg.defs+gradDefs()+'\n  </defs>' : '';
   return '<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="78" viewBox="0 0 '+W+' 78">'+fStyle()+defs+
   '\n  <rect width="'+W+'" height="78" rx="10" fill="'+bgFill()+'"/>'+bg.body+
   '\n  <text x="12" y="50" style="font-family:\'Courier New\',Courier,monospace" font-size="20" font-weight="bold" fill="'+S.col.pr+'" opacity="0">›'+
@@ -491,7 +502,23 @@ function render(code) {
   } catch(e){ st.className='status err'; st.textContent='⚠ '+e.message; }
 }
 
+function updateTistoryCode() {
+  var link = S.imp ? '<link href="'+S.imp+'" rel="stylesheet"/>\n' : '';
+  var img  = '<img src="이미지_경로/typing-intro.svg" />';
+  document.getElementById('tistory-code').textContent = link + img;
+}
+
+function copyTistory() {
+  var code = document.getElementById('tistory-code').textContent;
+  navigator.clipboard.writeText(code).then(function(){
+    var btn = document.getElementById('tistory-copy-btn');
+    btn.textContent = '✓ 복사됨'; btn.style.color = 'var(--green)';
+    setTimeout(function(){ btn.textContent = '⎘ 복사'; btn.style.color = 'var(--muted)'; }, 2000);
+  });
+}
+
 function regen() {
+  updateTistoryCode();
   var svg=genSVG(); ed.value=svg;
   if(S.imp){
     var fn=S.font.replace(/['"]/g,'').split(',')[0].trim();
@@ -534,8 +561,8 @@ function setGrad(btn,g)     { activate(btn,'grg'); S.grad=g; regen(); }
 function doReset() {
   if(!confirm('초기 코드로 되돌릴까요?'))return;
   S.effect='discrete'; S.font="'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif";
-  S.imp=''; S.dur='8s'; S.bg='none'; S.grad='none'; S.text='어서오세요. 성장하는 개발자 hyejin ahn입니다.';
-  document.getElementById('text-input').value = S.text;
+  S.imp=''; S.dur='8s'; S.bg='none'; S.grad='none'; S.text='어서오세요. 성장하는 개발자 (본인 이름)입니다.';
+  document.getElementById('text-input').value = '어서오세요. 성장하는 개발자 (본인 이름)입니다.';
   S.col={bg:'#0d1117',tx:'#c9d1d9',pr:'#3fb950',cu:'#58a6ff'};
   document.getElementById('c-bg').value='#0d1117'; document.getElementById('c-text').value='#c9d1d9';
   document.getElementById('c-prompt').value='#3fb950'; document.getElementById('c-cursor').value='#58a6ff';
