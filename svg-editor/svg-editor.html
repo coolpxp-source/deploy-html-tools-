@@ -72,6 +72,17 @@ footer{margin-top:32px;text-align:center;font-size:12px;color:var(--muted);opaci
   <div class="slabel">미리보기</div>
   <div class="preview" id="preview"><span style="color:var(--muted);font-size:13px">로딩 중...</span></div>
 
+  <!-- 텍스트 입력 -->
+  <div class="panel">
+    <div class="panel-title">📝 텍스트</div>
+    <input type="text" id="text-input"
+      value="어서오세요. 성장하는 개발자 (본인 이름)입니다."
+      oninput="S.text=this.value.trim()||'텍스트를 입력하세요'; regen()"
+      style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;font-size:15px;outline:none;"
+      placeholder="여기에 소개글을 입력하세요"/>
+    <p style="font-size:12px;color:var(--muted);margin-top:8px;">💡 <b style="color:var(--blue)">페이드인 · 떨어짐 · 바운스 · 글자별 바운스</b> 효과에서 자유롭게 수정하세요. 타닥타닥·슬라이드는 커서 위치가 어긋날 수 있어요.</p>
+  </div>
+
   <!-- 폰트 -->
   <div class="panel">
     <div class="panel-title">🔤 폰트</div>
@@ -178,7 +189,7 @@ var S = {
   imp    : '',          // 구글 폰트 import URL
   dur    : '8s',
   bg     : 'none',
-  text   : '어서오세요. 성장하는 개발자 (본인이름)입니다.',
+  text   : '어서오세요. 성장하는 개발자 hyejin ahn입니다.',
   col    : { bg:'#0d1117', tx:'#c9d1d9', pr:'#3fb950', cu:'#58a6ff' }
 };
 
@@ -296,8 +307,8 @@ function genTyping(calcMode) {
       ' dur="'+S.dur+'" repeatCount="indefinite"/></rect></clipPath>'+bg.defs+
   '\n  </defs>'+
   '\n  <rect width="'+W+'" height="78" rx="10" fill="'+S.col.bg+'"/>'+bg.body+
-  '\n  <text x="12" y="50" style="font-family:\'Courier New\',Courier,monospace" font-size="20" font-weight="bold" fill="'+S.col.pr+'">›</text>'+
-  '\n  <text x="32" y="50" style="font-family:'+S.font+'" font-size="22" fill="'+S.col.tx+'" clip-path="url(#tc)">'+S.text+'</text>'+
+  '\n  <text x="12" y="50" font-family="\'Courier New\',Courier,monospace" font-size="20" font-weight="bold" fill="'+S.col.pr+'">›</text>'+
+  '\n  <text x="32" y="50" font-family="'+S.font+'" font-size="22" fill="'+S.col.tx+'" clip-path="url(#tc)">'+S.text+'</text>'+
   '\n  <rect y="28" width="2" height="24" rx="1" fill="'+S.col.cu+'">'+
     '<animate attributeName="x" calcMode="'+calcMode+'"'+
     ' values="32;54;76;98;120;142;147;154;176;198;220;242;249;271;293;315;322;335;348;360;368;374;387;394;406;419;432;454;476;498;503;503;32;32"'+
@@ -391,7 +402,11 @@ function render(code) {
     if(doc.querySelector('parsererror')){
       st.className='status err'; st.textContent='⚠ SVG 문법 오류가 있어요.'; return;
     }
-    pv.innerHTML=code; st.className='status ok'; st.textContent='✓ 정상';
+    // innerHTML을 한번 비우고 다시 채워야 SMIL 애니메이션이 처음부터 재시작돼요
+    pv.innerHTML = '';
+    pv.offsetHeight; // 강제 reflow
+    pv.innerHTML = code;
+    st.className='status ok'; st.textContent='✓ 정상';
   } catch(e){ st.className='status err'; st.textContent='⚠ '+e.message; }
 }
 
@@ -438,6 +453,7 @@ function doReset() {
   if(!confirm('초기 코드로 되돌릴까요?'))return;
   S.effect='discrete'; S.font="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif";
   S.imp=''; S.dur='8s'; S.bg='none'; S.text='어서오세요. 성장하는 개발자 hyejin ahn입니다.';
+  document.getElementById('text-input').value = S.text;
   S.col={bg:'#0d1117',tx:'#c9d1d9',pr:'#3fb950',cu:'#58a6ff'};
   document.getElementById('c-bg').value='#0d1117'; document.getElementById('c-text').value='#c9d1d9';
   document.getElementById('c-prompt').value='#3fb950'; document.getElementById('c-cursor').value='#58a6ff';
