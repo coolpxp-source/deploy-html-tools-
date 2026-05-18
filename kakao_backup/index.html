@@ -268,6 +268,8 @@ textarea { height: 72px; line-height: 1.5; }
       <!-- 색상 설정 헤더 -->
       <div class="preview-header">
         <span class="preview-back">←</span>
+        <input id="room-name" value="대화방" 
+          style="background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.4);color:#fff;font-size:14px;font-family:inherit;text-align:center;width:150px" />
         <div class="color-chip-group">
           <div class="color-chip">
             <span>배경</span>
@@ -603,6 +605,7 @@ function renderPreview() {
 
 /* ── HTML 생성 ── */
 function generateHTML() {
+  const roomName = document.getElementById('room-name').value;
   const meText = isDark(colors.me) ? '#fff' : '#111';
   const otText = isDark(colors.ot) ? '#fff' : '#111';
   const css = `
@@ -637,7 +640,7 @@ function generateHTML() {
   </div>
 </div>`;
   });
-  const full = `<!-- 카카오톡 대화 백업 -->\n<style>\n${css}\n</style>\n<div class="kt">\n  <div class="kt-c">${body}\n  </div>\n</div>`;
+  const full = `<!-- 카카오톡 대화 백업 -->\n<style>\n${css}\n</style>\n<div class="kt"><div class="kt-header" style="background:#3a1d96;color:#fff;padding:12px 16px;font-size:15px;font-weight:bold">${roomName}</div><div class="kt-c">
   const box = document.getElementById('output-box');
   box.value = full;
   document.getElementById('modal-overlay').classList.add('open');
