@@ -177,6 +177,51 @@ textarea { height: 72px; line-height: 1.5; }
 
 /* ── 생성 HTML용 ── */
 .kt-av.hidden { visibility: hidden; }
+
+/* ── 모바일 반응형 ── */
+@media (max-width: 680px) {
+
+  body {
+    padding: 0;
+    align-items: stretch;
+    height: 100vh;
+  }
+
+  .wrap {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    max-width: 100%;
+    border-radius: 0;
+    border: none;
+  }
+
+  .preview-col {
+    order: 1;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .panel {
+    order: 2;
+    height: 45vh;
+    flex-shrink: 0;
+    border-right: none;
+    border-top: 1px solid #ddd;
+  }
+
+  .preview { max-height: none; }
+
+  .preview-header { padding: 8px 10px; gap: 6px; }
+  .color-chip-group { gap: 5px; }
+  .color-chip-btn { width: 22px; height: 22px; }
+  .reset-btn-circle { width: 22px; height: 22px; font-size: 12px; }
+  .color-chip span, .reset-chip span { display: none; }
+  .room-name-input { width: 80px; font-size: 12px; }
+  .preview-back { font-size: 14px; }
+  .chat-area { min-height: 80px; }
+}
 </style>
 </head>
 <body>
