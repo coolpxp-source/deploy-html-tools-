@@ -358,6 +358,7 @@ textarea { height: 72px; line-height: 1.5; }
           <div class="menu-dropdown" id="menu-dropdown">
             <button onclick="generateHTML(); closeMenu()">📋 HTML 코드 생성</button>
             <button onclick="savePNG(); closeMenu()">🖼 PNG로 저장</button>
+            <button onclick="loadHTML(); closeMenu()">✏️ 코드 수정하기</button>
           </div>
         </div>
       </div>
@@ -385,7 +386,21 @@ textarea { height: 72px; line-height: 1.5; }
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- 코드 수정하기 모달 -->
+<div class="modal-overlay" id="load-modal-overlay" onclick="handleLoadOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">✏️ 코드 수정하기</span>
+      <button class="modal-close" onclick="closeLoadModal()">✕</button>
+    </div>
+    <p style="font-size:13px;color:#666;margin:0;">이 툴로 생성한 HTML 코드를 붙여넣으세요.</p>
+    <textarea id="load-box" class="output-box" placeholder="HTML 코드를 붙여넣으세요..."></textarea>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="closeLoadModal()" class="btn-select-all">취소</button>
+      <button onclick="confirmLoad()" style="padding:6px 16px;background:#FEE500;border:1px solid #e6cf00;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:#111;">불러오기</button>
+    </div>
+  </div>
+</div>
 <script>
 let msgs = [], currentType = 'me', editingId = null;
 let currentOtherAvatar = null, currentMsgImg = null;
@@ -670,7 +685,8 @@ function generateHTML() {
   </div>
 </div>`;
   });
-  const full = `<!-- 카카오톡 대화 백업 -->\n<style>\n${css}\n</style>\n<div class="kt">\n  <div class="kt-hd">${roomName}</div>\n  <div class="kt-c">${body}\n  </div>\n</div>`;
+  const data = JSON.stringify({ msgs, colors, roomName: document.getElementById('room-name').value });
+  const full = `<!-- 카카오톡 대화 백업 -->\n<!-- DATA:${data} -->\n<style>\n${css}\n</style>\n<div class="kt">\n  <div class="kt-hd">${roomName}</div>\n  <div class="kt-c">${body}\n  </div>\n</div>`;
   const box = document.getElementById('output-box');
   box.value = full;
   document.getElementById('modal-overlay').classList.add('open');
@@ -699,6 +715,40 @@ function savePNG() {
 
 function toggleMenu() { document.getElementById('menu-dropdown').classList.toggle('open'); }
 function closeMenu() { document.getElementById('menu-dropdown').classList.remove('open'); }
+
+/* ── 코드 수정하기 ── */
+function loadHTML() {
+  document.getElementById('load-box').value = '';
+  document.getElementById('load-modal-overlay').classList.add('open');
+}
+
+function closeLoadModal() {
+  document.getElementById('load-modal-overlay').classList.remove('open');
+}
+
+function handleLoadOverlayClick(e) {
+  if (e.target === document.getElementById('load-modal-overlay')) closeLoadModal();
+}
+
+function confirmLoad() {
+  const html = document.getElementById('load-box').value;
+  const match = html.match(/<!-- DATA:(.*?) -->/s);
+  if (!match) {
+    alert('데이터를 찾을 수 없어요.\n이 툴로 생성한 HTML 코드를 붙여넣어주세요.');
+    return;
+  }
+  try {
+    const data = JSON.parse(match[1]);
+    msgs = data.msgs || [];
+    if (data.roomName) document.getElementById('room-name').value = data.roomName;
+    Object.keys(data.colors || {}).forEach(k => onColor(k, data.colors[k]));
+    closeLoadModal();
+    renderList();
+    renderPreview();
+  } catch(e) {
+    alert('데이터 파싱에 실패했어요. 올바른 코드인지 확인해주세요.');
+  }
+}
 
 document.addEventListener('click', e => {
   const wrap = document.getElementById('menu-wrap');
